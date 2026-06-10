@@ -1,4 +1,4 @@
-const CACHE_NAME = 'redonepaypro-v3';
+const CACHE_NAME = 'redonepaypro-v4';
 const urlsToCache = [
   './',
   './index.html',
@@ -52,11 +52,17 @@ self.addEventListener('fetch', (event) => {
   }
 
   // 3. Handle Navigation (HTML) - Network First, Fallback to Cache
+  // Fallback juga saat network return 4xx/5xx (bukan hanya network error),
+  // agar PWA yang terinstall tidak menampilkan error page Vercel.
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
+        .then((response) => {
+          if (response.ok) return response;
+          return caches.match('./') || caches.match('./index.html');
+        })
         .catch(() => {
-          return caches.match('./index.html');
+          return caches.match('./') || caches.match('./index.html');
         })
     );
     return;
