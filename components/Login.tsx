@@ -33,7 +33,7 @@ const Login: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-dark-bg flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white dark:bg-dark-card rounded-2xl shadow-xl border border-slate-200 dark:border-dark-border overflow-hidden animate-fade-in">
-        <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-8 text-center">
+        <div className="bg-gradient-to-r from-primary-600 to-primary-800 p-8 text-center">
             <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
                 <span className="text-3xl font-bold text-white">R</span>
             </div>

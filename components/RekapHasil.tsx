@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataService } from '../services/dataService';
-import { Printer, Calendar, Filter, Wallet, ArrowUpRight, ArrowDownLeft, TrendingUp, Search, X, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { Printer, FileText, Calendar, Filter, Wallet, ArrowUpRight, ArrowDownLeft, TrendingUp, Search, X, Loader2 } from 'lucide-react';
 
 interface RekapItem {
   employeeId: string;
@@ -8,6 +9,21 @@ interface RekapItem {
   totalUpah: number;
   totalDibayar: number;
   saldo: number;
+  productionItems: {
+    id: string;
+    date: string;
+    componentName: string;
+    qty: number;
+    price: number;
+    total: number;
+  }[];
+  paymentItems: {
+    id: string;
+    date: string;
+    amount: number;
+    type: string;
+    note?: string;
+  }[];
 }
 
 const RekapHasil: React.FC = () => {
@@ -30,8 +46,11 @@ const RekapHasil: React.FC = () => {
     setLoading(true);
     try {
         const employees = await DataService.getEmployees();
+        const components = await DataService.getComponents();
         const production = await DataService.getProductionLogs();
         const payments = await DataService.getPayments();
+
+        const componentsMap = new Map(components.map(c => [c.id, c.name]));
 
         const result: RekapItem[] = employees.map(emp => {
         const empProd = production.filter(p => 
@@ -54,7 +73,22 @@ const RekapHasil: React.FC = () => {
             name: emp.name,
             totalUpah,
             totalDibayar,
-            saldo: totalUpah - totalDibayar
+            saldo: totalUpah - totalDibayar,
+            productionItems: empProd.map(p => ({
+              id: p.id,
+              date: p.date,
+              componentName: componentsMap.get(p.componentId) || 'Unknown Component',
+              qty: p.qty,
+              price: p.priceSnapshot,
+              total: p.total
+            })),
+            paymentItems: empPayments.map(k => ({
+              id: k.id,
+              date: k.date,
+              amount: k.amount,
+              type: k.type,
+              note: k.note
+            }))
         };
         }).filter(item => item.totalUpah > 0 || item.totalDibayar > 0);
 
@@ -82,7 +116,7 @@ const RekapHasil: React.FC = () => {
   const handlePrint = () => {
     const w = window as any;
     if (!w.jspdf) {
-      alert('Library PDF sedang dimuat, coba sesaat lagi.');
+      toast.loading('Library PDF sedang dimuat, coba sesaat lagi.', { duration: 2000 });
       return;
     }
     
@@ -188,10 +222,156 @@ const RekapHasil: React.FC = () => {
 
       // 5. Save
       doc.save(`Rekap_Borongan_${startDate}_sd_${endDate}.pdf`);
+      toast.success("PDF berhasil dibuat!");
 
     } catch (err) {
       console.error(err);
-      alert("Gagal membuat PDF. Pastikan browser mendukung.");
+      toast.error("Gagal membuat PDF. Pastikan browser mendukung.");
+    } finally {
+      setIsPrinting(false);
+    }
+  };
+
+  const handlePrintDetail = () => {
+    const w = window as any;
+    if (!w.jspdf) {
+      toast.loading('Library PDF sedang dimuat, coba sesaat lagi.', { duration: 2000 });
+      return;
+    }
+    
+    setIsPrinting(true);
+
+    try {
+      const { jsPDF } = w.jspdf;
+      const doc = new jsPDF('portrait', 'mm', 'a4');
+
+      // 1. Header Document
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("PT. REDONE BERKAH MANDIRI UTAMA", 14, 15);
+      
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      doc.text("LAPORAN DETAIL HASIL BORONGAN PER KARYAWAN", 14, 21);
+      
+      doc.setFontSize(10);
+      doc.text(`Periode: ${periodText}`, 14, 27);
+
+      doc.line(14, 30, 196, 30); // Horizontal Line
+
+      let startY = 35;
+
+      data.forEach(item => {
+        // If not enough vertical space, add new page
+        if (startY > 250) {
+            doc.addPage();
+            startY = 20;
+        }
+
+        // Employee Header
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Karyawan: ${item.name}`, 14, startY);
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.text(`ID: ${item.employeeId}`, 14, startY + 4);
+        startY += 8;
+
+        const tableRows: any[] = [];
+        
+        // Add production items
+        if (item.productionItems.length > 0) {
+           tableRows.push([{ content: "RINCIAN PEKERJAAN (UPAH)", colSpan: 5, styles: { fillColor: [240, 240, 240], fontStyle: 'bold' } }]);
+           item.productionItems.forEach(prod => {
+             tableRows.push([
+               new Date(prod.date).toLocaleDateString('id-ID'),
+               prod.componentName,
+               prod.qty.toString(),
+               formatCurrency(prod.price),
+               formatCurrency(prod.total)
+             ]);
+           });
+        }
+
+        // Add payment items
+        if (item.paymentItems.length > 0) {
+           tableRows.push([{ content: "RINCIAN PEMBAYARAN / KASBON", colSpan: 5, styles: { fillColor: [240, 240, 240], fontStyle: 'bold' } }]);
+           item.paymentItems.forEach(pay => {
+             tableRows.push([
+               new Date(pay.date).toLocaleDateString('id-ID'),
+               pay.type === 'SALARY' ? 'Pembayaran Gaji' : 'Kasbon',
+               pay.note || '-',
+               '',
+               formatCurrency(pay.amount)
+             ]);
+           });
+        }
+        
+        if (tableRows.length > 0) {
+            doc.autoTable({
+                startY: startY,
+                head: [["Tanggal", "Keterangan / Komponen", "Qty", "Harga Satuan", "Total IDR"]],
+                body: tableRows,
+                theme: 'grid',
+                headStyles: { 
+                  fillColor: [22, 163, 74], 
+                  textColor: 255,
+                  fontStyle: 'bold'
+                },
+                styles: {
+                  fontSize: 9,
+                  cellPadding: 2,
+                  textColor: 20
+                },
+                columnStyles: {
+                  0: { cellWidth: 25 },
+                  1: { cellWidth: 'auto' },
+                  2: { halign: 'right', cellWidth: 15 },
+                  3: { halign: 'right', cellWidth: 30, font: 'courier' },
+                  4: { halign: 'right', cellWidth: 30, fontStyle: 'bold', font: 'courier' }
+                }
+            });
+
+            startY = (doc as any).lastAutoTable.finalY + 5;
+        }
+
+        // Subtotals for employee
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Total Upah: ${formatCurrency(item.totalUpah)}`, 14, startY);
+        doc.text(`Total Dibayar: ${formatCurrency(item.totalDibayar)}`, 80, startY);
+        
+        // Right align saldo
+        const saldoText = `Sisa Saldo: ${formatCurrency(item.saldo)}`;
+        doc.text(saldoText, 196, startY, { align: 'right' });
+
+        startY += 15;
+      });
+
+      // Signatures
+      if (startY > 230) {
+        doc.addPage();
+        startY = 40;
+      } else {
+        startY += 10;
+      }
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text("Mengetahui,", 40, startY, { align: 'center' });
+      doc.text("Manager", 40, startY + 5, { align: 'center' });
+      doc.text("(________________________)", 40, startY + 30, { align: 'center' });
+
+      doc.text("Dibuat Oleh,", 156, startY, { align: 'center' });
+      doc.text("Admin Keuangan", 156, startY + 5, { align: 'center' });
+      doc.text("(________________________)", 156, startY + 30, { align: 'center' });
+
+      doc.save(`Laporan_Detail_Borongan_${startDate}_sd_${endDate}.pdf`);
+      toast.success("PDF Detail berhasil dibuat!");
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Gagal membuat PDF. Pastikan browser mendukung.");
     } finally {
       setIsPrinting(false);
     }
@@ -231,12 +411,15 @@ const RekapHasil: React.FC = () => {
             <span>Periode: <span className="font-medium text-slate-700 dark:text-slate-300">{periodText}</span></span>
           </div>
         </div>
-        <div className="flex w-full sm:w-auto gap-2">
+        <div className="flex w-full sm:w-auto gap-2 flex-wrap sm:flex-nowrap">
           <button onClick={() => setModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm font-medium">
             <Filter size={16} /> Ganti Periode
           </button>
+          <button onClick={handlePrintDetail} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 shadow-lg shadow-primary-600/20 transition-all text-sm font-medium">
+            <FileText size={16} /> Print Detail / PDF
+          </button>
           <button onClick={handlePrint} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl hover:bg-slate-900 dark:hover:bg-white shadow-lg shadow-slate-800/20 transition-all text-sm font-medium">
-            <Printer size={16} /> Print / PDF
+            <Printer size={16} /> Print Global / PDF
           </button>
         </div>
       </div>

@@ -3,7 +3,8 @@ import { Component } from '../types';
 import { DataService } from '../services/dataService';
 import { useAuth } from '../contexts/AuthContext';
 import ConfirmModal from './ConfirmModal';
-import { Plus, Trash2, Edit2, Search, Package, CheckCircle, X, Printer, Loader2, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { Plus, Trash2, Edit2, Search, Package, CheckCircle, X, Printer, Loader2, ChevronLeft, ChevronRight, ChevronDown, AlertCircle } from 'lucide-react';
 
 const Components: React.FC = () => {
   const { user } = useAuth();
@@ -23,6 +24,11 @@ const Components: React.FC = () => {
   // Modal State
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
+
+  // Cleanup States
+  const [showCleanupModal, setShowCleanupModal] = useState(false);
+  const [cleanupResult, setCleanupResult] = useState<{ success: number, failed: number } | null>(null);
+  const [cleanupInputValue, setCleanupInputValue] = useState('');
 
   useEffect(() => { loadData(); }, []);
 
@@ -60,14 +66,22 @@ const Components: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim() || formData.price <= 0) return;
+    if (!formData.name.trim()) {
+        toast.error("Nama komponen tidak boleh kosong.");
+        return;
+    }
+    if (formData.price <= 0) {
+        toast.error("Harga komponen harus lebih dari 0.");
+        return;
+    }
     
     try {
         await DataService.saveComponent(formData);
+        toast.success(isEditing ? "Komponen diperbarui" : "Komponen ditambahkan");
         setIsOpen(false);
         loadData();
     } catch (e) {
-        alert("Gagal menyimpan komponen.");
+        toast.error("Gagal menyimpan komponen.");
     }
   };
 
@@ -84,9 +98,32 @@ const Components: React.FC = () => {
 
   const confirmDelete = async () => {
     if (deleteId) {
-      await DataService.deleteComponent(deleteId);
-      loadData();
-      setDeleteId(null);
+      try {
+        await DataService.deleteComponent(deleteId);
+        toast.success("Komponen berhasil dihapus.");
+        loadData();
+      } catch (error) {
+        console.error("Gagal menghapus komponen", error);
+        toast.error("Gagal menghapus komponen. Periksa koneksi internet Anda.");
+      } finally {
+        setDeleteId(null);
+      }
+    }
+  };
+
+  const executeCleanup = async () => {
+    if (cleanupInputValue.toLowerCase() === 'cleanup') {
+      try {
+        const result = await DataService.cleanupComponents();
+        setCleanupResult(result);
+        setShowCleanupModal(false);
+        setCleanupInputValue('');
+        loadData();
+      } catch (err) {
+        toast.error("Gagal melakukan cleanup data komponen.");
+      }
+    } else {
+      toast.error("Teks konfirmasi tidak sesuai. Ketik 'cleanup' untuk melanjutkan.");
     }
   };
 
@@ -94,7 +131,7 @@ const Components: React.FC = () => {
   const handlePrint = () => {
     const w = window as any;
     if (!w.jspdf) {
-      alert('Library PDF sedang dimuat.');
+      toast.loading('Library PDF sedang dimuat.', { duration: 2000 });
       return;
     }
 
@@ -173,10 +210,11 @@ const Components: React.FC = () => {
       doc.text("(________________________)", 150, sigY + 30, { align: 'center' });
 
       doc.save(`Daftar_Komponen_${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success("PDF berhasil dibuat!");
 
     } catch (err) {
       console.error(err);
-      alert("Gagal membuat PDF.");
+      toast.error("Gagal membuat PDF.");
     } finally {
       setIsPrinting(false);
     }
@@ -223,6 +261,86 @@ const Components: React.FC = () => {
         confirmText="Mengerti"
       />
 
+      {/* Cleanup Result Modal */}
+      {cleanupResult && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-dark-card w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-slate-100 dark:border-dark-border text-center">
+            <div className="mx-auto w-16 h-16 bg-green-50 dark:bg-green-900/20 text-green-500 rounded-full flex items-center justify-center mb-4">
+               <CheckCircle size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Cleanup Selesai</h3>
+            <p className="text-slate-600 dark:text-slate-300 text-sm mb-6">
+              Berhasil dihapus: <span className="font-bold text-green-600">{cleanupResult.success}</span> data<br/>
+              Gagal dihapus (memiliki relasi): <span className="font-bold text-red-600">{cleanupResult.failed}</span> data
+            </p>
+            <button 
+              onClick={() => setCleanupResult(null)}
+              className="w-full py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-bold rounded-xl transition-colors"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Cleanup Confirmation Modal */}
+      {showCleanupModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-dark-card w-full max-w-md rounded-2xl shadow-2xl border border-red-100 dark:border-red-900/30 overflow-hidden transform transition-all">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-dark-border flex justify-between items-center bg-red-50 dark:bg-red-900/10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg">
+                  <AlertCircle size={20} />
+                </div>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Cleanup Data Komponen</h3>
+              </div>
+              <button onClick={() => {setShowCleanupModal(false); setCleanupInputValue('');}} className="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="mb-6 space-y-3">
+                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                  Tindakan ini akan menghapus data komponen yang <span className="font-bold text-slate-800 dark:text-white">tidak memiliki relasi</span> (belum ada transaksi hasil kerja). Data komponen dengan relasi akan diabaikan.
+                </p>
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-900/30">
+                  <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                    Ketik <span className="font-mono bg-white dark:bg-black/30 px-1.5 py-0.5 rounded text-red-600 font-bold tracking-wider">cleanup</span> untuk mengonfirmasi.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <input 
+                  type="text" 
+                  value={cleanupInputValue} 
+                  onChange={(e) => setCleanupInputValue(e.target.value)} 
+                  placeholder="Ketik 'cleanup' disini..."
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 text-center font-mono text-lg font-bold tracking-wider" 
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={() => {setShowCleanupModal(false); setCleanupInputValue('');}} 
+                  className="flex-1 py-3 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors border border-slate-200 dark:border-slate-700"
+                >
+                  Batal
+                </button>
+                <button 
+                  onClick={executeCleanup}
+                  disabled={cleanupInputValue.toLowerCase() !== 'cleanup'}
+                  className="flex-1 py-3 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all shadow-lg shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Jalankan Cleanup
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -235,6 +353,14 @@ const Components: React.FC = () => {
           />
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
+          {user?.role === 'ADMIN' && (
+            <button 
+                onClick={() => setShowCleanupModal(true)} 
+                className="flex-1 sm:flex-none flex justify-center items-center gap-2 px-4 py-3 md:py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/30 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/40 transition-all font-medium text-sm"
+            >
+                <Trash2 size={18} /> Cleanup Data
+            </button>
+          )}
           <button 
             onClick={handlePrint} 
             className="flex-1 sm:flex-none flex justify-center items-center gap-2 px-4 py-3 md:py-2 bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl hover:bg-slate-900 dark:hover:bg-slate-200 shadow-lg shadow-slate-800/20 transition-all font-medium text-sm"

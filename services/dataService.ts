@@ -13,6 +13,7 @@ export const DataService = {
     const { data, error } = await supabase
       .from('employees')
       .select('*')
+      .limit(999999)
       .order('id', { ascending: true });
     
     if (error) throw error;
@@ -48,6 +49,27 @@ export const DataService = {
     await DataService.deleteUserByEmployeeId(id);
   },
 
+  cleanupEmployees: async (): Promise<{ successCount: number, failedCount: number }> => {
+    const employees = await DataService.getEmployees();
+    let successCount = 0;
+    let failedCount = 0;
+
+    for (const emp of employees) {
+      const { hasDependencies } = await DataService.checkEmployeeDependencies(emp.id);
+      if (hasDependencies) {
+        failedCount++;
+      } else {
+        try {
+          await DataService.deleteEmployee(emp.id);
+          successCount++;
+        } catch (e) {
+          failedCount++;
+        }
+      }
+    }
+    return { successCount, failedCount };
+  },
+
   checkEmployeeDependencies: async (id: string) => {
     const { count: prodCount } = await supabase
       .from('production_logs')
@@ -73,6 +95,7 @@ export const DataService = {
     const { data, error } = await supabase
       .from('components')
       .select('*')
+      .limit(999999)
       .order('id', { ascending: true });
 
     if (error) throw error;
@@ -103,6 +126,27 @@ export const DataService = {
     if (error) throw error;
   },
 
+  cleanupComponents: async (): Promise<{ successCount: number, failedCount: number }> => {
+    const components = await DataService.getComponents();
+    let successCount = 0;
+    let failedCount = 0;
+
+    for (const comp of components) {
+      const { hasDependencies } = await DataService.checkComponentDependencies(comp.id);
+      if (hasDependencies) {
+        failedCount++;
+      } else {
+        try {
+          await DataService.deleteComponent(comp.id);
+          successCount++;
+        } catch (e) {
+          failedCount++;
+        }
+      }
+    }
+    return { successCount, failedCount };
+  },
+
   checkComponentDependencies: async (id: string) => {
     const { count } = await supabase
         .from('production_logs')
@@ -120,6 +164,7 @@ export const DataService = {
     const { data, error } = await supabase
       .from('production_logs')
       .select('*')
+      .limit(999999)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -163,11 +208,18 @@ export const DataService = {
     if (error) throw error;
   },
 
+  deleteAllProductionLogs: async () => {
+    // Delete all records by matching a condition that is always true
+    const { error } = await supabase.from('production_logs').delete().neq('id', '0');
+    if (error) throw error;
+  },
+
   // --- PAYMENTS ---
   getPayments: async (): Promise<Payment[]> => {
     const { data, error } = await supabase
       .from('payments')
       .select('*')
+      .limit(999999)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -208,6 +260,11 @@ export const DataService = {
     if (error) throw error;
   },
 
+  deleteAllPayments: async () => {
+    const { error } = await supabase.from('payments').delete().neq('id', '0');
+    if (error) throw error;
+  },
+
   // --- AUTH & USER MANAGEMENT ---
   login: async (username: string, password: string): Promise<UserAccount | null> => {
     const { data, error } = await supabase
@@ -229,7 +286,7 @@ export const DataService = {
   },
 
   getUsers: async (): Promise<UserAccount[]> => {
-    const { data, error } = await supabase.from('app_users').select('*');
+    const { data, error } = await supabase.from('app_users').select('*').limit(999999);
     if (error) throw error;
 
     return (data || []).map((u: any) => ({

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LedgerItem, Employee } from '../types';
 import { DataService } from '../services/dataService';
+import toast from 'react-hot-toast';
 import { ArrowUpRight, ArrowDownLeft, Filter, ChevronDown, ChevronUp, RotateCcw, Search, Printer, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Finance: React.FC = () => {
@@ -119,7 +120,7 @@ const Finance: React.FC = () => {
   const handlePrint = () => {
      const w = window as any;
      if (!w.jspdf) {
-       alert('Library PDF sedang dimuat.');
+       toast.loading('Library PDF sedang dimuat.', { duration: 2000 });
        return;
      }
 
@@ -211,10 +212,11 @@ const Finance: React.FC = () => {
        doc.text("(________________________)", 240, sigY + 30, { align: 'center' });
 
        doc.save(`Laporan_Keuangan_${startStr}_${endStr}.pdf`);
+       toast.success("PDF berhasil dibuat!");
 
      } catch (err) {
        console.error(err);
-       alert("Gagal membuat PDF.");
+       toast.error("Gagal membuat PDF.");
      } finally {
        setIsPrinting(false);
      }

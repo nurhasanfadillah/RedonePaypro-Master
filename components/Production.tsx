@@ -3,7 +3,8 @@ import { ProductionLog, Employee, Component } from '../types';
 import { DataService } from '../services/dataService';
 import { useAuth } from '../contexts/AuthContext';
 import ConfirmModal from './ConfirmModal';
-import { Plus, Trash2, Edit2, CheckCircle, X, Filter, RotateCcw, Calendar, Search, ChevronDown, ChevronUp, Printer, Loader2, User, Package, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { Plus, Trash2, Edit2, CheckCircle, X, Filter, RotateCcw, Calendar, Search, ChevronDown, ChevronUp, Printer, Loader2, User, Package, AlertCircle, ChevronLeft, ChevronRight, ClipboardList } from 'lucide-react';
 
 const Production: React.FC = () => {
   const { user } = useAuth();
@@ -37,6 +38,10 @@ const Production: React.FC = () => {
   // New Export States
   const [exportType, setExportType] = useState<'COMPONENT' | 'EMPLOYEE'>('COMPONENT');
   const [selectedExportEmpId, setSelectedExportEmpId] = useState('');
+
+  // Cleanup States
+  const [showCleanupModal, setShowCleanupModal] = useState(false);
+  const [cleanupInputValue, setCleanupInputValue] = useState('');
 
   useEffect(() => { loadData(); }, [user]);
   
@@ -94,7 +99,26 @@ const Production: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.employeeId || !formData.componentId || formData.qty <= 0) return;
+    if (!formData.date) {
+        toast.error("Tanggal pengerjaan harus diisi.");
+        return;
+    }
+    if (new Date(formData.date) > new Date()) {
+        toast.error("Tanggal pengerjaan tidak boleh melebihi hari ini.");
+        return;
+    }
+    if (!formData.employeeId) {
+        toast.error("Karyawan harus dipilih.");
+        return;
+    }
+    if (!formData.componentId) {
+        toast.error("Komponen harus dipilih.");
+        return;
+    }
+    if (formData.qty <= 0) {
+        toast.error("Kuantitas (Qty) harus lebih dari 0.");
+        return;
+    }
 
     const comp = components.find(c => c.id === formData.componentId);
     if (!comp) return;
@@ -107,18 +131,42 @@ const Production: React.FC = () => {
     
     try {
         await DataService.saveProductionLog(logData);
+        toast.success(isEditing ? "Data produksi diperbarui" : "Data produksi ditambahkan");
         setIsOpen(false);
         loadData();
     } catch (e) {
-        alert("Gagal menyimpan data produksi.");
+        toast.error("Gagal menyimpan data produksi.");
     }
   };
 
   const confirmDelete = async () => {
     if (deleteId) {
-      await DataService.deleteProductionLog(deleteId);
-      loadData();
-      setDeleteId(null);
+      try {
+        await DataService.deleteProductionLog(deleteId);
+        toast.success("Data produksi berhasil dihapus.");
+        loadData();
+      } catch (error) {
+        console.error("Gagal menghapus data", error);
+        toast.error("Gagal menghapus data produksi. Periksa koneksi internet Anda.");
+      } finally {
+        setDeleteId(null);
+      }
+    }
+  };
+
+  const executeCleanup = async () => {
+    if (cleanupInputValue.toLowerCase() === 'cleanup') {
+      try {
+        await DataService.deleteAllProductionLogs();
+        setShowCleanupModal(false);
+        setCleanupInputValue('');
+        loadData();
+        toast.success("Semua data hasil kerja berhasil dihapus.");
+      } catch (err) {
+        toast.error("Gagal menghapus data hasil kerja.");
+      }
+    } else {
+      toast.error("Teks konfirmasi tidak sesuai. Ketik 'cleanup' untuk melanjutkan.");
     }
   };
 
@@ -183,7 +231,7 @@ const Production: React.FC = () => {
     
     const w = window as any;
     if (!w.jspdf) {
-      alert('Library PDF sedang dimuat.');
+      toast.loading('Library PDF sedang dimuat.', { duration: 2000 });
       return;
     }
     
@@ -194,7 +242,7 @@ const Production: React.FC = () => {
     }
 
     if (exportType === 'EMPLOYEE' && !targetEmpId) {
-      alert("Silakan pilih karyawan terlebih dahulu.");
+      toast.error("Silakan pilih karyawan terlebih dahulu.");
       return;
     }
 
@@ -423,10 +471,11 @@ const Production: React.FC = () => {
 
         doc.save(`Slip_Gaji_${empName.replace(/\s+/g, '_')}_${exportPeriod.start}.pdf`);
       }
+      toast.success("PDF berhasil dibuat!");
 
     } catch (err) {
       console.error(err);
-      alert("Gagal membuat PDF.");
+      toast.error("Gagal membuat PDF.");
     } finally {
       setIsPrinting(false);
     }
@@ -451,6 +500,64 @@ const Production: React.FC = () => {
         confirmText="Hapus"
       />
 
+      {/* Cleanup Confirmation Modal */}
+      {showCleanupModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-dark-card w-full max-w-md rounded-2xl shadow-2xl border border-red-100 dark:border-red-900/30 overflow-hidden transform transition-all">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-dark-border flex justify-between items-center bg-red-50 dark:bg-red-900/10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg">
+                  <AlertCircle size={20} />
+                </div>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Hapus Semua Data</h3>
+              </div>
+              <button onClick={() => {setShowCleanupModal(false); setCleanupInputValue('');}} className="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="mb-6 space-y-3">
+                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                  Tindakan ini akan <span className="font-bold border-b border-red-500 text-slate-800 dark:text-white">menghapus seluruh</span> data hasil kerja dari database secara permanen. Data yang telah dihapus tidak dapat dikembalikan.
+                </p>
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-900/30">
+                  <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                    Ketik <span className="font-mono bg-white dark:bg-black/30 px-1.5 py-0.5 rounded text-red-600 font-bold tracking-wider">cleanup</span> untuk mengonfirmasi.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <input 
+                  type="text" 
+                  value={cleanupInputValue} 
+                  onChange={(e) => setCleanupInputValue(e.target.value)} 
+                  placeholder="Ketik 'cleanup' disini..."
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 text-center font-mono text-lg font-bold tracking-wider" 
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={() => {setShowCleanupModal(false); setCleanupInputValue('');}} 
+                  className="flex-1 py-3 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors border border-slate-200 dark:border-slate-700"
+                >
+                  Batal
+                </button>
+                <button 
+                  onClick={executeCleanup}
+                  disabled={cleanupInputValue.toLowerCase() !== 'cleanup'}
+                  className="flex-1 py-3 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all shadow-lg shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Hapus Permanen
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header & Add Button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -462,9 +569,14 @@ const Production: React.FC = () => {
                 <Printer size={18} /> Ekspor PDF
             </button>
             {user?.role === 'ADMIN' && (
-                <button onClick={() => handleOpen()} className="flex-1 sm:flex-none flex justify-center items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 shadow-lg shadow-green-600/30 transition-all font-medium text-sm">
-                    <Plus size={18} /> Input Hasil
-                </button>
+                <>
+                  <button onClick={() => setShowCleanupModal(true)} className="flex-1 sm:flex-none flex justify-center items-center gap-2 px-4 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/30 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/40 transition-all font-medium text-sm">
+                      <Trash2 size={18} /> Cleanup Data
+                  </button>
+                  <button onClick={() => handleOpen()} className="flex-1 sm:flex-none flex justify-center items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 shadow-lg shadow-green-600/30 transition-all font-medium text-sm">
+                      <Plus size={18} /> Input Hasil
+                  </button>
+                </>
             )}
         </div>
       </div>
@@ -620,10 +732,12 @@ const Production: React.FC = () => {
       )}
 
       {!loading && filteredLogs.length === 0 && (
-        <div className="p-12 text-center flex flex-col items-center justify-center text-slate-500 bg-white dark:bg-dark-card rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
-           <Search size={48} className="text-slate-200 dark:text-slate-700 mb-4" />
-           <p className="font-medium">Data tidak ditemukan</p>
-           <p className="text-sm">Coba sesuaikan filter pencarian Anda.</p>
+        <div className="p-16 text-center flex flex-col items-center justify-center text-slate-500 bg-slate-50/50 dark:bg-slate-800/20 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 animate-fade-in">
+           <div className="bg-white dark:bg-slate-800 p-4 rounded-full shadow-sm border border-slate-100 dark:border-slate-700 mb-4">
+             <ClipboardList size={32} className="text-slate-400 dark:text-slate-500" />
+           </div>
+           <p className="font-bold text-slate-700 dark:text-slate-300 text-lg mb-1">Tidak ada data produksi</p>
+           <p className="text-sm text-slate-500">Coba sesuaikan filter pencarian atau input hasil kerja baru.</p>
         </div>
       )}
 
@@ -632,20 +746,20 @@ const Production: React.FC = () => {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm">
             
             {/* Rows Per Page Selector */}
-            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 w-full sm:w-auto justify-between sm:justify-start">
-               <span>Tampilkan:</span>
+            <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400 w-full sm:w-auto justify-between sm:justify-start">
+               <span className="font-medium">Tampilkan:</span>
                <div className="relative">
                   <select 
                     value={itemsPerPage} 
                     onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                    className="appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg pl-3 pr-8 py-1.5 focus:outline-none focus:ring-2 focus:ring-green-500 font-medium text-slate-800 dark:text-slate-200"
+                    className="appearance-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg pl-4 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 font-medium text-slate-800 dark:text-slate-200 shadow-sm transition-all hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
                   >
                      <option value={10}>10 Baris</option>
                      <option value={20}>20 Baris</option>
                      <option value={50}>50 Baris</option>
                      <option value={100}>100 Baris</option>
                   </select>
-                  <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500" />
+                  <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500" />
                </div>
             </div>
 

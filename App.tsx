@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 
 // Import Views
+import { Toaster } from 'react-hot-toast';
 import Dashboard from './components/Dashboard';
 import Employees from './components/Employees';
 import Components from './components/Components';
@@ -444,6 +445,7 @@ const App: React.FC = () => {
 
   return (
     <AuthProvider>
+        <Toaster position="top-center" />
         <RootContainer />
     </AuthProvider>
   );

@@ -3,7 +3,8 @@ import { Payment, Employee, ProductionLog } from '../types';
 import { DataService } from '../services/dataService';
 import { useAuth } from '../contexts/AuthContext';
 import ConfirmModal from './ConfirmModal';
-import { Plus, Trash2, Edit2, Wallet, CheckCircle, X, Banknote, Filter, Printer, Loader2, Info, Calculator, Calendar, ChevronDown, ChevronUp, RotateCcw, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { Plus, Trash2, Edit2, Wallet, CheckCircle, X, Banknote, Filter, Printer, Loader2, Info, Calculator, Calendar, ChevronDown, ChevronUp, RotateCcw, ChevronLeft, ChevronRight, Search, AlertCircle } from 'lucide-react';
 
 const Payments: React.FC = () => {
   const { user } = useAuth();
@@ -24,6 +25,10 @@ const Payments: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [filterType, setFilterType] = useState<'ALL' | 'KASBON' | 'SALARY'>('ALL');
 
+  // Cleanup States
+  const [showCleanupModal, setShowCleanupModal] = useState(false);
+  const [cleanupInputValue, setCleanupInputValue] = useState('');
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
@@ -39,6 +44,7 @@ const Payments: React.FC = () => {
   });
   
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [overpayWarning, setOverpayWarning] = useState<Payment | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
 
   useEffect(() => { 
@@ -99,22 +105,71 @@ const Payments: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.employeeId || formData.amount <= 0) return;
+    if (!formData.date) {
+        toast.error("Tanggal transaksi harus diisi.");
+        return;
+    }
+    if (new Date(formData.date) > new Date()) {
+        toast.error("Tanggal transaksi tidak boleh melebihi hari ini.");
+        return;
+    }
+    if (!formData.employeeId) {
+        toast.error("Karyawan harus dipilih.");
+        return;
+    }
+    if (formData.amount <= 0) {
+        toast.error("Nominal pembayaran harus lebih dari 0.");
+        return;
+    }
+
+    if (formData.type === 'SALARY' && formData.amount > currentBalance) {
+        setOverpayWarning(formData);
+        return;
+    }
     
+    await executeSavePayment(formData);
+  };
+
+  const executeSavePayment = async (dataToSave: Payment) => {
     try {
-        await DataService.savePayment(formData);
+        await DataService.savePayment(dataToSave);
+        toast.success(isEditing ? "Pembayaran diperbarui" : "Pembayaran dicatat");
         setIsOpen(false);
+        setOverpayWarning(null);
         loadData();
     } catch (e) {
-        alert("Gagal menyimpan data pembayaran");
+        toast.error("Gagal menyimpan data pembayaran");
     }
   };
 
   const confirmDelete = async () => {
     if (deleteId) {
-      await DataService.deletePayment(deleteId);
-      loadData();
-      setDeleteId(null);
+      try {
+        await DataService.deletePayment(deleteId);
+        toast.success("Data transaksi berhasil dihapus.");
+        loadData();
+      } catch (error) {
+        console.error("Gagal menghapus data", error);
+        toast.error("Gagal menghapus data transaksi. Periksa koneksi internet Anda.");
+      } finally {
+        setDeleteId(null);
+      }
+    }
+  };
+
+  const executeCleanup = async () => {
+    if (cleanupInputValue.toLowerCase() === 'cleanup') {
+      try {
+        await DataService.deleteAllPayments();
+        setShowCleanupModal(false);
+        setCleanupInputValue('');
+        loadData();
+        toast.success("Semua data Pembayaran & Kasbon berhasil dihapus.");
+      } catch (err) {
+        toast.error("Gagal menghapus data Pembayaran & Kasbon.");
+      }
+    } else {
+      toast.error("Teks konfirmasi tidak sesuai. Ketik 'cleanup' untuk melanjutkan.");
     }
   };
 
@@ -163,7 +218,7 @@ const Payments: React.FC = () => {
   const handleProcessExport = async () => {
     const w = window as any;
     if (!w.jspdf) {
-      alert('Library PDF sedang dimuat.');
+      toast.loading('Library PDF sedang dimuat.', { duration: 2000 });
       return;
     }
 
@@ -285,10 +340,11 @@ const Payments: React.FC = () => {
       doc.text("(________________________)", 150, sigY + 30, { align: 'center' });
 
       doc.save(`Data_Pembayaran_${exportPeriod.start}.pdf`);
+      toast.success("PDF berhasil dibuat!");
 
     } catch (err) {
       console.error(err);
-      alert("Gagal membuat PDF.");
+      toast.error("Gagal membuat PDF.");
     } finally {
       setIsPrinting(false);
     }
@@ -313,6 +369,74 @@ const Payments: React.FC = () => {
         confirmText="Hapus"
       />
 
+      <ConfirmModal 
+        isOpen={!!overpayWarning}
+        title="Konfirmasi Pembayaran Lebih"
+        message={`Nominal pembayaran (Rp ${overpayWarning?.amount.toLocaleString('id-ID')}) melebihi sisa gaji tersimpan. Kelebihan akan tercatat sebagai Kasbon/Minus. Tetap lanjutkan?`}
+        onConfirm={() => overpayWarning && executeSavePayment(overpayWarning)}
+        onCancel={() => setOverpayWarning(null)}
+        type="danger"
+        confirmText="Ya, Lanjutkan"
+      />
+
+      {/* Cleanup Confirmation Modal */}
+      {showCleanupModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-dark-card w-full max-w-md rounded-2xl shadow-2xl border border-red-100 dark:border-red-900/30 overflow-hidden transform transition-all">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-dark-border flex justify-between items-center bg-red-50 dark:bg-red-900/10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg">
+                  <AlertCircle size={20} />
+                </div>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Hapus Semua Data Transaksi</h3>
+              </div>
+              <button onClick={() => {setShowCleanupModal(false); setCleanupInputValue('');}} className="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="mb-6 space-y-3">
+                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                  Tindakan ini akan <span className="font-bold border-b border-red-500 text-slate-800 dark:text-white">menghapus seluruh</span> data Pembayaran & Kasbon dari database secara permanen. Data yang telah dihapus tidak dapat dikembalikan.
+                </p>
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-900/30">
+                  <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                    Ketik <span className="font-mono bg-white dark:bg-black/30 px-1.5 py-0.5 rounded text-red-600 font-bold tracking-wider">cleanup</span> untuk mengonfirmasi.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <input 
+                  type="text" 
+                  value={cleanupInputValue} 
+                  onChange={(e) => setCleanupInputValue(e.target.value)} 
+                  placeholder="Ketik 'cleanup' disini..."
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 text-center font-mono text-lg font-bold tracking-wider" 
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={() => {setShowCleanupModal(false); setCleanupInputValue('');}} 
+                  className="flex-1 py-3 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors border border-slate-200 dark:border-slate-700"
+                >
+                  Batal
+                </button>
+                <button 
+                  onClick={executeCleanup}
+                  disabled={cleanupInputValue.toLowerCase() !== 'cleanup'}
+                  className="flex-1 py-3 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all shadow-lg shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Hapus Permanen
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Pembayaran & Kasbon</h2>
@@ -326,12 +450,17 @@ const Payments: React.FC = () => {
             <Printer size={18} /> Ekspor PDF
           </button>
           {user?.role === 'ADMIN' && (
-            <button 
-                onClick={() => handleOpen()} 
-                className="flex-1 md:flex-none flex justify-center items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/30 transition-all font-medium text-sm"
-            >
-                <Plus size={18} /> Input Transaksi
-            </button>
+            <>
+              <button onClick={() => setShowCleanupModal(true)} className="flex-1 md:flex-none flex justify-center items-center gap-2 px-4 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/30 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/40 transition-all font-medium text-sm">
+                  <Trash2 size={18} /> Cleanup Data
+              </button>
+              <button 
+                  onClick={() => handleOpen()} 
+                  className="flex-1 md:flex-none flex justify-center items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/30 transition-all font-medium text-sm"
+              >
+                  <Plus size={18} /> Input Transaksi
+              </button>
+            </>
           )}
         </div>
       </div>

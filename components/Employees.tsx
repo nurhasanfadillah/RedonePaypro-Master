@@ -2,12 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Employee, UserAccount } from '../types';
 import { DataService } from '../services/dataService';
 import ConfirmModal from './ConfirmModal';
-import { Plus, Trash2, Edit2, Search, User, CheckCircle, X, MapPin, Printer, Loader2, Key, Shield, MoreVertical } from 'lucide-react';
+import EmployeeDetail from './EmployeeDetail';
+import toast from 'react-hot-toast';
+import { Plus, Trash2, Edit2, Search, User, CheckCircle, X, MapPin, Printer, Loader2, Key, Shield, MoreVertical, AlertCircle, FileText } from 'lucide-react';
 
 const Employees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // View State for Employee Detail
+  const [viewingEmployee, setViewingEmployee] = useState<Employee | null>(null);
+
   
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -22,7 +28,13 @@ const Employees: React.FC = () => {
   
   // Modal States
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [removeAccessConfirm, setRemoveAccessConfirm] = useState<Employee | null>(null);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
+
+  // Cleanup States
+  const [showCleanupModal, setShowCleanupModal] = useState(false);
+  const [cleanupResult, setCleanupResult] = useState<{ success: number, failed: number } | null>(null);
+  const [cleanupInputValue, setCleanupInputValue] = useState('');
 
   // Menu State
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -75,14 +87,22 @@ const Employees: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) return;
+    if (!formData.name.trim()) {
+        toast.error("Nama karyawan tidak boleh kosong.");
+        return;
+    }
+    if (!formData.address.trim()) {
+        toast.error("Alamat karyawan tidak boleh kosong.");
+        return;
+    }
 
     try {
         await DataService.saveEmployee(formData);
+        toast.success(isEditing ? "Karyawan diperbarui" : "Karyawan ditambahkan");
         setIsOpen(false);
         loadData();
     } catch (error) {
-        alert("Gagal menyimpan data.");
+        toast.error("Gagal menyimpan data.");
     }
   };
 
@@ -102,7 +122,7 @@ const Employees: React.FC = () => {
     e.preventDefault();
     if (!selectedEmployee) return;
     if (!accessData.username || !accessData.password) {
-        alert("Username dan Password wajib diisi");
+        toast.error("Username dan Password wajib diisi");
         return;
     }
 
@@ -115,17 +135,26 @@ const Employees: React.FC = () => {
             fullName: selectedEmployee.name
         };
         await DataService.saveUser(newUser);
+        toast.success("Akses login diberikan");
         setIsAccessOpen(false);
         loadData(); 
     } catch (error: any) {
-        alert(error.message);
+        toast.error(error.message);
     }
   };
 
-  const handleDeleteAccess = async () => {
-      if (selectedEmployee && window.confirm(`Hapus akses login untuk ${selectedEmployee.name}?`)) {
-          await DataService.deleteUserByEmployeeId(selectedEmployee.id);
+  const handleRequestRemoveAccess = () => {
+     if (selectedEmployee) {
+         setRemoveAccessConfirm(selectedEmployee);
+     }
+  };
+
+  const executeRemoveAccess = async () => {
+      if (removeAccessConfirm) {
+          await DataService.deleteUserByEmployeeId(removeAccessConfirm.id);
+          toast.success("Akses login dihapus");
           setIsAccessOpen(false);
+          setRemoveAccessConfirm(null);
           loadData();
       }
   };
@@ -147,9 +176,32 @@ const Employees: React.FC = () => {
 
   const confirmDelete = async () => {
     if (deleteId) {
-      await DataService.deleteEmployee(deleteId);
-      loadData();
-      setDeleteId(null);
+      try {
+        await DataService.deleteEmployee(deleteId);
+        toast.success("Karyawan berhasil dihapus.");
+        loadData();
+      } catch (error) {
+        console.error("Gagal menghapus karyawan", error);
+        toast.error("Gagal menghapus karyawan. Periksa koneksi internet Anda.");
+      } finally {
+        setDeleteId(null);
+      }
+    }
+  };
+
+  const executeCleanup = async () => {
+    if (cleanupInputValue.toLowerCase() === 'cleanup') {
+      try {
+        const result = await DataService.cleanupEmployees();
+        setCleanupResult(result);
+        setShowCleanupModal(false);
+        setCleanupInputValue('');
+        loadData();
+      } catch (err) {
+        toast.error("Gagal melakukan cleanup data karyawan.");
+      }
+    } else {
+      toast.error("Teks konfirmasi tidak sesuai. Ketik 'cleanup' untuk melanjutkan.");
     }
   };
 
@@ -157,7 +209,7 @@ const Employees: React.FC = () => {
   const handlePrint = () => {
     const w = window as any;
     if (!w.jspdf) {
-      alert('Library PDF sedang dimuat.');
+      toast.loading('Library PDF sedang dimuat.', { duration: 2000 });
       return;
     }
 
@@ -232,10 +284,11 @@ const Employees: React.FC = () => {
       doc.text("(________________________)", 150, sigY + 30, { align: 'center' });
 
       doc.save(`Data_Karyawan_${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success("PDF berhasil dibuat!");
 
     } catch (err) {
       console.error(err);
-      alert("Gagal membuat PDF.");
+      toast.error("Gagal membuat PDF.");
     } finally {
       setIsPrinting(false);
     }
@@ -247,6 +300,15 @@ const Employees: React.FC = () => {
   );
 
   const hasAccess = (empId: string) => users.some(u => u.employeeId === empId);
+
+  if (viewingEmployee) {
+    return (
+      <EmployeeDetail 
+        employee={viewingEmployee} 
+        onBack={() => setViewingEmployee(null)} 
+      />
+    );
+  }
 
   return (
     <div className="space-y-4 md:space-y-6 relative animate-fade-in">
@@ -268,6 +330,16 @@ const Employees: React.FC = () => {
       />
 
       <ConfirmModal 
+        isOpen={!!removeAccessConfirm}
+        title="Hapus Akses Login"
+        message={`Apakah Anda yakin ingin menghapus akses login untuk ${removeAccessConfirm?.name}?`}
+        onConfirm={executeRemoveAccess}
+        onCancel={() => setRemoveAccessConfirm(null)}
+        type="danger"
+        confirmText="Hapus Akses"
+      />
+
+      <ConfirmModal 
         isOpen={!!alertMessage}
         title="Gagal Menghapus Data"
         message={alertMessage || ''}
@@ -277,6 +349,86 @@ const Employees: React.FC = () => {
         singleButton={true}
         confirmText="Mengerti"
       />
+
+      {/* Cleanup Result Modal */}
+      {cleanupResult && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-dark-card w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-slate-100 dark:border-dark-border text-center">
+            <div className="mx-auto w-16 h-16 bg-green-50 dark:bg-green-900/20 text-green-500 rounded-full flex items-center justify-center mb-4">
+               <CheckCircle size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Cleanup Selesai</h3>
+            <p className="text-slate-600 dark:text-slate-300 text-sm mb-6">
+              Berhasil dihapus: <span className="font-bold text-green-600">{cleanupResult.success}</span> data<br/>
+              Gagal dihapus (memiliki relasi): <span className="font-bold text-red-600">{cleanupResult.failed}</span> data
+            </p>
+            <button 
+              onClick={() => setCleanupResult(null)}
+              className="w-full py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-bold rounded-xl transition-colors"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Cleanup Confirmation Modal */}
+      {showCleanupModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-dark-card w-full max-w-md rounded-2xl shadow-2xl border border-red-100 dark:border-red-900/30 overflow-hidden transform transition-all">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-dark-border flex justify-between items-center bg-red-50 dark:bg-red-900/10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg">
+                  <AlertCircle size={20} />
+                </div>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Cleanup Data Karyawan</h3>
+              </div>
+              <button onClick={() => {setShowCleanupModal(false); setCleanupInputValue('');}} className="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="mb-6 space-y-3">
+                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                  Tindakan ini akan menghapus data karyawan yang <span className="font-bold text-slate-800 dark:text-white">tidak memiliki relasi</span> (belum ada transaksi pembayaran atau hasil kerja). Data karyawan dengan relasi akan diabaikan.
+                </p>
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-900/30">
+                  <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                    Ketik <span className="font-mono bg-white dark:bg-black/30 px-1.5 py-0.5 rounded text-red-600 font-bold tracking-wider">cleanup</span> untuk mengonfirmasi.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <input 
+                  type="text" 
+                  value={cleanupInputValue} 
+                  onChange={(e) => setCleanupInputValue(e.target.value)} 
+                  placeholder="Ketik 'cleanup' disini..."
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 text-center font-mono text-lg font-bold tracking-wider" 
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={() => {setShowCleanupModal(false); setCleanupInputValue('');}} 
+                  className="flex-1 py-3 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors border border-slate-200 dark:border-slate-700"
+                >
+                  Batal
+                </button>
+                <button 
+                  onClick={executeCleanup}
+                  disabled={cleanupInputValue.toLowerCase() !== 'cleanup'}
+                  className="flex-1 py-3 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all shadow-lg shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Jalankan Cleanup
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row justify-between gap-3 md:gap-4">
         <div className="relative w-full sm:w-72">
@@ -290,6 +442,12 @@ const Employees: React.FC = () => {
           />
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
+          <button 
+            onClick={() => setShowCleanupModal(true)} 
+            className="flex-1 sm:flex-none flex justify-center items-center gap-2 px-4 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/30 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/40 transition-all font-medium text-sm"
+          >
+            <Trash2 size={18} /> Cleanup Data
+          </button>
           <button 
             onClick={handlePrint} 
             className="flex-1 sm:flex-none flex justify-center items-center gap-2 px-4 py-2.5 bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl hover:bg-slate-900 dark:hover:bg-slate-200 shadow-lg shadow-slate-800/20 transition-all font-medium text-sm"
@@ -325,7 +483,11 @@ const Employees: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-dark-border">
               {filtered.map(emp => (
-                <tr key={emp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <tr 
+                  key={emp.id} 
+                  className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                  onClick={() => setViewingEmployee(emp)}
+                >
                   <td className="px-6 py-4">
                     <span className="font-mono text-xs font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/30 px-2 py-1 rounded">
                       {emp.id}
@@ -357,6 +519,13 @@ const Employees: React.FC = () => {
                     
                     {activeMenu === emp.id && (
                         <div className="absolute right-8 top-8 w-48 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl shadow-lg z-50 p-1 flex flex-col text-left">
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); setViewingEmployee(emp); setActiveMenu(null); }}
+                                className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium"
+                            >
+                                <FileText size={14} className="text-primary-500" /> Lihat Detail
+                            </button>
+                            <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
                             <button 
                                 onClick={(e) => { e.stopPropagation(); handleOpenAccess(emp); setActiveMenu(null); }}
                                 className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
@@ -390,7 +559,11 @@ const Employees: React.FC = () => {
       {/* MOBILE CARD VIEW */}
       <div className="md:hidden space-y-3">
         {filtered.map(emp => (
-          <div key={emp.id} className="bg-white dark:bg-dark-card p-3.5 rounded-xl shadow-sm border border-slate-200 dark:border-dark-border flex items-center justify-between overflow-visible relative">
+          <div 
+            key={emp.id} 
+            className="bg-white dark:bg-dark-card p-3.5 rounded-xl shadow-sm border border-slate-200 dark:border-dark-border flex items-center justify-between overflow-visible relative cursor-pointer active:scale-[0.99] transition-transform"
+            onClick={() => setViewingEmployee(emp)}
+          >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-600 flex items-center justify-center font-bold text-sm">
                  {emp.name.charAt(0)}
@@ -418,6 +591,13 @@ const Employees: React.FC = () => {
                 </button>
                 {activeMenu === emp.id && (
                     <div className="absolute right-0 top-10 w-48 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl shadow-xl z-50 p-1 flex flex-col text-left">
+                         <button 
+                            onClick={(e) => { e.stopPropagation(); setViewingEmployee(emp); setActiveMenu(null); }}
+                            className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
+                        >
+                            <FileText size={16} className="text-primary-500" /> Lihat Detail
+                        </button>
+                        <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
                          <button 
                             onClick={(e) => { e.stopPropagation(); handleOpenAccess(emp); setActiveMenu(null); }}
                             className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
@@ -564,7 +744,7 @@ const Employees: React.FC = () => {
                 {hasAccess(selectedEmployee.id) && (
                     <button 
                         type="button"
-                        onClick={handleDeleteAccess}
+                        onClick={handleRequestRemoveAccess}
                         className="w-full flex justify-center items-center gap-2 px-4 py-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl font-medium transition-colors"
                     >
                         Hapus Akses

@@ -113,7 +113,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
       </div>
 
       {/* 1. Financial Summary (Moved Here) */}
-      <div className="bg-gradient-to-br from-slate-800 to-slate-900 dark:from-dark-card dark:to-slate-900 p-5 md:p-8 rounded-2xl shadow-lg text-white relative overflow-hidden">
+      <div className="bg-gradient-to-br from-primary-600 to-primary-800 p-5 md:p-8 rounded-2xl shadow-lg text-white relative overflow-hidden">
         {/* Decorative Circles */}
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-5 rounded-full blur-2xl"></div>
         <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-32 h-32 bg-primary-500 opacity-10 rounded-full blur-2xl"></div>
