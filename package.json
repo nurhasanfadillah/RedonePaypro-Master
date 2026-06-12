@@ -13,8 +13,7 @@
     "lucide-react": "0.395.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "react-hot-toast": "^2.6.0",
-    "recharts": "2.12.7"
+    "react-hot-toast": "^2.6.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
