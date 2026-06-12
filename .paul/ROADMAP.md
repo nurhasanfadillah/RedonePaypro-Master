@@ -117,8 +117,7 @@
 
 ## Milestone v1.6: Mobile UI Polish
 
-**Status:** 🔄 In progress
-**Goal:** Perbaiki tampilan mobile card di halaman Karyawan dan Komponen agar lebih ringkas dan fungsional.
+**Status:** ✅ SHIPPED — 2026-06-13
 
 ---
 
@@ -138,7 +137,7 @@
 
 ## Progress
 
-Phases complete: 8 of 8 (100%)
+Phases complete: 10 of 10 (100%)
 Milestone v1.0: ✅ shipped
 Milestone v1.1: ✅ shipped
 Milestone v1.2: ✅ shipped
@@ -146,3 +145,42 @@ Milestone v1.3: ✅ shipped
 Milestone v1.4: ✅ shipped
 Milestone v1.5: ✅ shipped
 Milestone v1.6: ✅ shipped
+Milestone v1.7: ✅ shipped
+
+---
+
+---
+
+## Milestone v1.7: Production UI Polish
+
+**Status:** ✅ SHIPPED — 2026-06-13
+**Goal:** Polish tampilan mobile: card produksi lebih compact (Phase 9) + PWA optimal (Phase 10).
+
+---
+
+### Phase 9: Production Card Compact
+
+**Status:** ✅ Complete — 2026-06-13
+**Goal:** Compact mobile card produksi menjadi 2 kolom: kiri (nama + detail), kanan (harga) — dengan aksi edit/hapus muncul saat diklik.
+**Dependencies:** Phase 8 complete ✓
+**Plans:** 1/1 complete
+
+**Deliverables:**
+- ✅ Production.tsx: mobile card 2 kolom (nama + detail kiri, harga kanan)
+- ✅ Toggle aksi edit/hapus saat card diklik (ADMIN only)
+- ✅ Click-outside untuk menutup menu aksi
+
+---
+
+### Phase 10: PWA Optimization
+
+**Status:** ✅ Complete — 2026-06-13
+**Goal:** Audit dan optimalisasi PWA: manifest icons multi-size + maskable, SW update notification, offline indicator di UI.
+**Dependencies:** Phase 7 complete ✓
+**Plans:** 1/1 complete
+
+**Deliverables:**
+- ✅ manifest.json: categories + lang + icons purpose any/maskable
+- ✅ sw.js: v8 + SKIP_WAITING message handler + CDN cache resilience
+- ✅ index.html: description meta + viewport-fit=cover
+- ✅ index.tsx: SW update prompt + offline banner

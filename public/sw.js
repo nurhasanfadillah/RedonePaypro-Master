@@ -1,4 +1,4 @@
-const CACHE_NAME = 'redonepaypro-v7';
+const CACHE_NAME = 'redonepaypro-v8';
 const urlsToCache = [
   '/',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
@@ -10,8 +10,8 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
+      .catch((err) => console.warn('SW install partial:', err))
   );
-  self.skipWaiting();
 });
 
 // Activate SW & Clean old caches
@@ -26,6 +26,13 @@ self.addEventListener('activate', (event) => {
     )
   );
   self.clients.claim();
+});
+
+// Message handler untuk skip waiting (trigger dari update prompt)
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Fetch Handler
