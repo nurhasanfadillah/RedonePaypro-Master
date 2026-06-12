@@ -4,7 +4,7 @@ import { DataService } from '../services/dataService';
 import { useAuth } from '../contexts/AuthContext';
 import ConfirmModal from './ConfirmModal';
 import toast from 'react-hot-toast';
-import { Plus, Trash2, Edit2, CheckCircle, X, Filter, RotateCcw, Calendar, Search, ChevronDown, ChevronUp, Printer, Loader2, User, Package, AlertCircle, ChevronLeft, ChevronRight, ClipboardList } from 'lucide-react';
+import { Plus, Trash2, Edit2, CheckCircle, X, Filter, RotateCcw, Search, ChevronDown, ChevronUp, Printer, Loader2, User, Package, AlertCircle, ChevronLeft, ChevronRight, ClipboardList } from 'lucide-react';
 
 const Production: React.FC = () => {
   const { user } = useAuth();
@@ -43,6 +43,8 @@ const Production: React.FC = () => {
   const [showCleanupModal, setShowCleanupModal] = useState(false);
   const [cleanupInputValue, setCleanupInputValue] = useState('');
 
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+
   useEffect(() => { loadData(); }, [user]);
   
   const loadData = async () => {
@@ -78,6 +80,16 @@ const Production: React.FC = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [filterStartDate, filterEndDate, filterEmployeeId, filterComponentId, itemsPerPage]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: any) => {
+      if (activeMenu && !event.target.closest('.prod-card')) {
+        setActiveMenu(null);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [activeMenu]);
 
   const handleOpen = (log?: ProductionLog) => {
     if (log) {
@@ -680,51 +692,48 @@ const Production: React.FC = () => {
         </div>
       </div>
 
-      {/* MOBILE COMPACT CARD VIEW (Visible only on Mobile) */}
-      <div className="md:hidden space-y-4">
+      {/* MOBILE COMPACT CARD VIEW */}
+      <div className="md:hidden space-y-2">
         {currentItems.map(log => (
-          <div key={log.id} className="bg-white dark:bg-dark-card p-4 rounded-xl shadow-sm border border-slate-200 dark:border-dark-border">
-            {/* Top Row: Name & Total */}
-            <div className="flex justify-between items-start gap-3 mb-3">
-              <span className="font-bold text-slate-800 dark:text-slate-100 text-base truncate flex-1">
-                {getEmpName(log.employeeId)}
-              </span>
-              <span className="font-bold text-green-600 dark:text-green-400 text-base shrink-0">
-                Rp {log.total.toLocaleString('id-ID')}
-              </span>
-            </div>
-
-            {/* Middle Row: Component & Qty */}
-            <div className="flex justify-between items-center text-sm mb-4 text-slate-500 dark:text-slate-400">
-               <span className="truncate pr-2">{getCompName(log.componentId)}</span>
-               <span className="font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-slate-600 dark:text-slate-300 text-xs font-bold">
-                 x{log.qty}
-               </span>
-            </div>
-
-            {/* Bottom Row: Date & Actions */}
-            <div className={`flex justify-between items-center pt-3 border-t border-slate-100 dark:border-slate-800 ${user?.role !== 'ADMIN' ? 'justify-end' : ''}`}>
-              <div className="flex items-center text-xs text-slate-400 font-medium mr-auto">
-                 <Calendar size={12} className="mr-1.5"/>
-                 {new Date(log.date).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'})}
+          <div
+            key={log.id}
+            className="prod-card bg-white dark:bg-dark-card rounded-xl shadow-sm border border-slate-200 dark:border-dark-border overflow-hidden"
+          >
+            <div
+              className="flex items-stretch p-3 gap-3 cursor-pointer active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors"
+              onClick={() => setActiveMenu(activeMenu === log.id ? null : log.id)}
+            >
+              <div className="flex flex-col flex-1 min-w-0 gap-1">
+                <span className="font-bold text-slate-800 dark:text-slate-100 text-sm truncate">
+                  {getEmpName(log.employeeId)}
+                </span>
+                <span className="text-[11px] text-slate-400 dark:text-slate-500 truncate">
+                  {log.date.slice(8,10)}/{log.date.slice(5,7)} · {getCompName(log.componentId)} ×{log.qty}
+                </span>
               </div>
-              {user?.role === 'ADMIN' && (
-                <div className="flex gap-2">
-                    <button 
-                    onClick={() => handleOpen(log)} 
-                    className="flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
-                    >
-                    Edit
-                    </button>
-                    <button 
-                    onClick={() => setDeleteId(log.id)} 
-                    className="flex items-center gap-1.5 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
-                    >
-                    Hapus
-                    </button>
-                </div>
-              )}
+              <div className="flex items-center shrink-0">
+                <span className="font-bold text-green-600 dark:text-green-400 text-sm whitespace-nowrap">
+                  Rp {log.total.toLocaleString('id-ID')}
+                </span>
+              </div>
             </div>
+
+            {activeMenu === log.id && user?.role === 'ADMIN' && (
+              <div className="flex gap-2 px-3 pb-3 border-t border-slate-100 dark:border-slate-800 pt-2">
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleOpen(log); setActiveMenu(null); }}
+                  className="flex-1 flex justify-center items-center gap-1 text-xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg active:scale-95 transition-transform"
+                >
+                  <Edit2 size={13} /> Edit
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setDeleteId(log.id); setActiveMenu(null); }}
+                  className="flex-1 flex justify-center items-center gap-1 text-xs font-bold text-red-600 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg active:scale-95 transition-transform"
+                >
+                  <Trash2 size={13} /> Hapus
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
