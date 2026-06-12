@@ -68,9 +68,33 @@
 
 ---
 
+---
+
+## Milestone v1.3: UI Polish
+
+**Status:** ✅ COMPLETE — 2026-06-12
+**Goal:** Rapikan tampilan UI — label button lebih ringkas dan konsisten.
+
+---
+
+### Phase 4: UI Label Polish
+
+**Status:** ✅ Complete — 2026-06-12
+**Goal:** Persingkat label button di header halaman Produksi, Pembayaran, dan Rekap agar tampil lebih rapi.
+**Dependencies:** Phase 3 complete ✓
+**Plans:** 1/1 complete
+
+**Deliverables:**
+- ✓ Production: Ekspor / Cleanup / Input
+- ✓ Payments: Ekspor / Cleanup / Input
+- ✓ RekapHasil: Periode / Detail / Global
+
+---
+
 ## Progress
 
-Phases complete: 2 of 3 (67%)
+Phases complete: 4 of 4 (100%)
 Milestone v1.0: ✅ shipped
 Milestone v1.1: ✅ shipped
 Milestone v1.2: ✅ shipped
+Milestone v1.3: ✅ shipped

@@ -51,6 +51,12 @@ Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT
 | ✓ PWA SW bersih (tidak cache CDN URLs) | Phase 3 | CACHE_NAME v6, urlsToCache clean |
 | ✓ PWA meta tags lengkap | Phase 3 | apple + mobile-web-app-capable |
 | ✓ importmap bersih dari dead entries | Phase 3 | recharts + supabase dihapus |
+| ✓ Label button ringkas (satu kata) di header | Phase 4 | Ekspor/Cleanup/Input (Produksi & Pembayaran), Periode/Detail/Global (Rekap) |
+
+## Key Decisions (Phase 4)
+| Decision | Rationale |
+|----------|-----------|
+| Label button satu kata (Ekspor, Cleanup, Input, Periode, Detail, Global) | Icon sudah menjelaskan fungsi; label panjang boros ruang di layar kecil |
 
 ## Key Decisions (Phase 3)
 | Decision | Rationale |
@@ -85,4 +91,4 @@ Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT
 | `GEMINI_API_KEY` | Google Gemini (belum aktif digunakan) |
 
 ---
-*Last updated: 2026-06-12 after Phase 2 (02-migrate-neondb)*
+*Last updated: 2026-06-12 after Phase 4 (04-ui-label-polish)*
