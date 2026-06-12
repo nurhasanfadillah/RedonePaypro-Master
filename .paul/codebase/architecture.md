@@ -74,20 +74,23 @@ index.tsx
 | File | ViewState | Lines | Role |
 |------|-----------|-------|------|
 | `components/Dashboard.tsx` | DASHBOARD | 218 | ALL |
-| `components/Employees.tsx` | EMPLOYEES | 760 | ADMIN |
-| `components/Components.tsx` | COMPONENTS | 548 | ALL |
-| `components/Production.tsx` | PRODUCTION | 951 | ALL |
-| `components/Payments.tsx` | PAYMENTS | 804 | ALL |
-| `components/Finance.tsx` | FINANCE | 412 | ADMIN (legacy) |
-| `components/RekapHasil.tsx` | REKAP | 555 | ADMIN |
+| `components/Employees.tsx` | EMPLOYEES | ~1,039 | ADMIN |
+| `components/Components.tsx` | COMPONENTS | ~548 | ALL |
+| `components/Production.tsx` | PRODUCTION | ~1,378 | ALL |
+| `components/Payments.tsx` | PAYMENTS | ~1,211 | ALL |
+| `components/Finance.tsx` | FINANCE | ~412 | ADMIN (legacy) |
+| `components/RekapHasil.tsx` | REKAP | ~555 | ADMIN |
+| `App.tsx` | (layout) | ~636 | — |
+
+*Line counts diperbarui 2026-06-12. Peningkatan signifikan dari commit `428a029` (toast) & `c6c4f83` (core modules).*
 
 ### Shared Components
 | File | Purpose |
 |------|---------|
-| `components/Login.tsx` | Form login |
-| `components/ConfirmModal.tsx` | Modal konfirmasi reusable (78 baris) |
-| `components/EmployeeDetail.tsx` | Detail/edit karyawan (modal, 490 baris) |
-| `components/Kasbon.tsx` | **Deprecated** (16 baris, masih diimport) |
+| `components/Login.tsx` | Form login (~129 baris) |
+| `components/ConfirmModal.tsx` | Modal konfirmasi reusable (~79 baris) |
+| `components/EmployeeDetail.tsx` | Detail/edit karyawan (modal, ~490 baris) |
+| `components/Kasbon.tsx` | **Deprecated** (16 baris, masih diimport di App.tsx:35) |
 
 ## Data Models (`types.ts`)
 ```typescript
@@ -101,7 +104,7 @@ enum ViewState { DASHBOARD, EMPLOYEES, COMPONENTS, PRODUCTION, PAYMENTS, FINANCE
 ```
 
 ## Service Layer (`services/dataService.ts`)
-Object literal export (bukan class). Semua fungsi `async`.
+Object literal export (bukan class). Semua fungsi `async`. ~371 baris.
 
 ```
 DataService
@@ -119,7 +122,7 @@ DataService
 
 **Fetch pattern**: `.limit(999999)` — semua record tanpa pagination DB.
 
-**Data mapping**: snake_case (DB) ↔ camelCase (JS) dilakukan manual di setiap fungsi.
+**Data mapping**: snake_case (DB) ↔ camelCase (JS) dilakukan manual di setiap fungsi (tidak konsisten — hanya production_logs & payments yang di-map eksplisit).
 
 ## Data Flow
 ```

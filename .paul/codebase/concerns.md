@@ -1,16 +1,20 @@
 # Concerns & Technical Debt
 
+*Diperbarui: 2026-06-12. Semua isu CRITICAL dari map sebelumnya (2026-06-10) dikonfirmasi masih ada.*
+
 ## CRITICAL (Harus diperbaiki sebelum produksi)
 
 ### [SEC-1] Kredensial Supabase Hardcoded di Source Code
 - **File**: `services/supabaseClient.ts:10-11`
 - **Issue**: URL dan Anon Key di-hardcode sebagai fallback
+- **Evidence**: `'https://sartektzisafnmbiuhwd.supabase.co'` dan JWT key di source
 - **Risk**: Siapa pun dengan akses repo bisa mengakses database
 - **Fix**: Hapus hardcode, gunakan env vars saja. Rotate key di Supabase dashboard.
 
 ### [SEC-2] Password Disimpan Plaintext
 - **File**: `services/dataService.ts:274`, `types.ts:59`
 - **Issue**: `app_users.password` disimpan dan dibandingkan tanpa hashing
+- **Evidence**: `.eq('password', password)` — direct string comparison di login query
 - **Risk**: Database breach = semua password user terekspos
 - **Fix**: Implementasi bcrypt/argon2 untuk hash password
 
@@ -33,8 +37,18 @@
 ### [PERF-1] `.limit(999999)` — Tidak Ada Pagination di Database
 - **File**: `services/dataService.ts:16, 98, 167, 223`
 - **Issue**: Semua record diambil sekaligus tanpa batasan
-- **Risk**: Performa degradasi seiring bertambahnya data; memory overhead
+- **Risk**: Performa degradasi seiring bertambahnya data; memory overhead (dengan ~7K LOC dan pertumbuhan data)
 - **Fix**: Implementasi cursor/offset pagination di DataService
+
+### [SIZE-0] Komponen Sangat Besar (Updated 2026-06-12)
+- **Files & current line counts**:
+  - `components/Production.tsx` — ~1,378 baris
+  - `components/Payments.tsx` — ~1,211 baris
+  - `components/Employees.tsx` — ~1,039 baris
+  - `App.tsx` — ~636 baris
+- **Issue**: Tumbuh signifikan sejak commit `c6c4f83` — jauh melebihi 500 baris
+- **Risk**: Sulit di-maintain, high merge conflict risk, render performa buruk
+- **Fix**: Split ke sub-components dan ekstrak logika ke custom hooks
 
 ### [TYPE-1] Penggunaan `any` di Banyak Tempat
 - **Files**: `App.tsx:40` (icon props), `Dashboard.tsx:60` (StatCard props), `dataService.ts:173,227,292` (Supabase mapping), `Production.tsx:30`
@@ -51,7 +65,7 @@
 ## MEDIUM
 
 ### [DUP-1] Logika PDF Export Duplikat di 5 Komponen
-- **Files**: `Employees.tsx:208-295`, `Components.tsx:131-221`, `Production.tsx:228-482`, `Payments.tsx:217-351`, `RekapHasil.tsx:115-378`
+- **Files**: `Employees.tsx`, `Components.tsx`, `Production.tsx`, `Payments.tsx`, `RekapHasil.tsx`
 - **Issue**: Inisialisasi jsPDF, header, styling tabel hampir identik di semua komponen
 - **Fix**: Ekstrak ke `utils/pdfExporter.ts`
 
@@ -61,18 +75,9 @@
 - **Fix**: Buat custom hook `usePagination(items, itemsPerPage)`
 
 ### [DUP-3] Logika Filter Panel Duplikat
-- **Files**: `Production.tsx:585-640`, `Payments.tsx:468-503`
+- **Files**: `Production.tsx`, `Payments.tsx`
 - **Issue**: Collapsible filter section dengan struktur dan styling identik
 - **Fix**: Ekstrak ke reusable `FilterPanel` component
-
-### [SIZE-1] Production.tsx — 951 Baris
-- **Issue**: Satu file berisi form logic, PDF export, cleanup, filter, pagination, desktop + mobile view
-- **Risk**: Sulit di-maintain, high merge conflict risk
-- **Fix**: Split ke `ProductionForm.tsx`, `ProductionTable.tsx`, `ProductionExport.tsx`
-
-### [SIZE-2] Payments.tsx — 804 Baris & Employees.tsx — 760 Baris
-- **Issue**: Sama dengan Production.tsx — terlalu banyak concern dalam satu file
-- **Fix**: Ekstrak form dan export ke file terpisah
 
 ### [ERR-2] Tidak Ada Error Boundary
 - **File**: `App.tsx` — tidak ada React Error Boundary
@@ -103,12 +108,23 @@
 - **Issue**: File deprecated masih ada dan diimport walaupun tidak digunakan di menu
 - **Fix**: Hapus import dan file
 
+### [MISC-2] recharts Ada di package.json Tapi Tidak Terpakai
+- **File**: `package.json`
+- **Issue**: `recharts@2.12.7` tercantum sebagai dependency tapi tidak terdeteksi digunakan aktif
+- **Risk**: ~200KB bundle bloat
+- **Fix**: Cek penggunaan, hapus jika tidak diperlukan: `npm uninstall recharts`
+
+### [MISC-3] Dua Salinan sw.js
+- **Files**: `/sw.js` (root) dan `/public/sw.js`
+- **Issue**: Tidak jelas mana yang aktif — berpotensi konflik saat update
+- **Fix**: Konfirmasi satu lokasi canonical, hapus duplikat
+
 ---
 
 ## LOW
 
 ### [SEC-5] `window as any` untuk jsPDF Access
-- **Files**: `Production.tsx:232`, `Payments.tsx:219,229`
+- **Files**: `Production.tsx`, `Payments.tsx`
 - **Issue**: Type cast `as any` untuk akses `window.jspdf` — tidak type-safe
 - **Fix**: Buat declaration file `jspdf.d.ts` dengan type untuk global `window.jspdf`
 
@@ -125,16 +141,21 @@
 - **Issue**: State-based navigation — URL tidak berubah saat navigasi, back button tidak bekerja, tidak bisa bookmark halaman tertentu
 - **Fix**: Migrasi ke React Router v6 jika perlu shareable URLs
 
+### [LOCALE-1] Hardcoded Locale `'en-CA'`
+- **Files**: Multiple components menggunakan `'en-CA'` untuk format tanggal
+- **Issue**: Harus update semua file jika lokalisasi berubah
+- **Fix**: Buat konstanta atau utility function `formatDate()`
+
 ---
 
 ## Summary
 | Severity | Count |
 |----------|-------|
 | CRITICAL | 4 |
-| HIGH | 3 |
-| MEDIUM | 9 |
-| LOW | 4 |
-| **Total** | **20** |
+| HIGH | 4 |
+| MEDIUM | 10 |
+| LOW | 5 |
+| **Total** | **23** |
 
 **Top 3 prioritas immediate action:**
 1. Rotate Supabase credentials + pindah ke env vars

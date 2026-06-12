@@ -68,8 +68,8 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 ---
 
 ## Service Worker (PWA)
-- **File**: `sw.js`
-- **Cache name**: `redonepaypro-v3`
+- **File**: `sw.js` (ada dua: root `/sw.js` dan `/public/sw.js` — konfirmasi mana yang aktif)
+- **Cache name**: `redonepaypro-v4` (updated dari v3 di commit `786087b`)
 - **Registration**: `index.tsx` — `navigator.serviceWorker.register('/sw.js')`
 - **Cache strategies**:
   | URL Pattern | Strategy |
@@ -81,6 +81,13 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 
 ---
 
+## Google Gemini API (Disiapkan, Belum Aktif)
+- **Key**: `GEMINI_API_KEY` di `.env.example` dan `vite.config.ts`
+- **Status**: Didefinisikan di konfigurasi Vite tapi tidak ada penggunaan aktif di kode
+- **Defined as**: `process.env.API_KEY` dan `process.env.GEMINI_API_KEY`
+
+---
+
 ## Summary Dependency Map
 ```
 RedonePaypro
@@ -89,7 +96,7 @@ RedonePaypro
 │   ├── react@19.2.3                   ← UI framework
 │   ├── react-dom@19.2.3
 │   ├── lucide-react@0.395.0           ← icons
-│   ├── recharts@2.12.7                ← charts
+│   ├── recharts@2.12.7                ← charts (⚠️ mungkin tidak terpakai)
 │   └── react-hot-toast@2.6.0         ← toasts
 └── CDN (index.html)
     ├── tailwindcss (latest)           ← CSS
