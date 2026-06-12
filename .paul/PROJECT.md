@@ -47,6 +47,17 @@ Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT
 | ✓ Zero Supabase dependency | Phase 2 | @supabase/supabase-js dihapus |
 | ✓ Semua CRUD via /api/* | Phase 2 | dataService.ts rewrite total |
 | ✓ Login/Auth via NeonDB | Phase 2 | /api/auth, session di localStorage |
+| ✓ Tailwind CSS via PostCSS (bukan CDN) | Phase 3 | 42.93 kB CSS bundle, no CORS error |
+| ✓ PWA SW bersih (tidak cache CDN URLs) | Phase 3 | CACHE_NAME v6, urlsToCache clean |
+| ✓ PWA meta tags lengkap | Phase 3 | apple + mobile-web-app-capable |
+| ✓ importmap bersih dari dead entries | Phase 3 | recharts + supabase dihapus |
+
+## Key Decisions (Phase 3)
+| Decision | Rationale |
+|----------|-----------|
+| Tailwind v3 via PostCSS, bukan v4 | v4 config format berbeda; v3 match existing theme config |
+| CJS format untuk tailwind.config.js | package.json tanpa type:module — CJS default |
+| Bump SW CACHE_NAME v5→v6 | Force replacement SW lama yang masih cache CDN URL |
 
 ## Key Decisions (Phase 1)
 | Decision | Rationale |

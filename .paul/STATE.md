@@ -1,23 +1,23 @@
 ## Current Position
 
-Milestone: v1.2 Frontend Hardening — In progress
-Phase: 3 of 3 (Frontend Hardening) — Planning
-Plan: 03-01 created, awaiting approval
-Status: PLAN created, ready for APPLY
-Last activity: 2026-06-12 — Created .paul/phases/03-frontend-hardening/03-01-PLAN.md
+Milestone: v1.2 Frontend Hardening — **COMPLETE**
+Phase: 3 of 3 (Frontend Hardening) — **Complete**
+Plan: 03-02 complete
+Status: UNIFY done — Milestone v1.2 shipped
+Last activity: 2026-06-12 — Phase 3 complete, browser console bersih
 
 Progress:
 - Milestone v1.0: [██████████] 100% (complete)
 - Milestone v1.1: [██████████] 100% (complete)
-- Milestone v1.2: [░░░░░░░░░░] 0%
-- Phase 3: [░░░░░░░░░░] 0% (0/2 plans)
+- Milestone v1.2: [██████████] 100% (complete)
+- Phase 3: [██████████] 100% (2/2 plans)
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ○        ○     [Plan created, awaiting approval]
+  ✓        ✓        ✓     [Loop complete — Phase 3 & Milestone v1.2 shipped]
 ```
 
 ## Plans in Phase 01
@@ -40,43 +40,39 @@ PLAN ──▶ APPLY ──▶ UNIFY
 
 | Plan | File | Status | Note |
 |------|------|--------|------|
-| 03-01 | `.paul/phases/03-frontend-hardening/03-01-PLAN.md` | ○ Not started | Tailwind CDN → PostCSS build |
-| 03-02 | `.paul/phases/03-frontend-hardening/03-02-PLAN.md` | ○ Not started | Fix SW + cleanup index.html |
+| 03-01 | `.paul/phases/03-frontend-hardening/03-01-PLAN.md` | ✓ Complete | Tailwind CDN → PostCSS build |
+| 03-02 | `.paul/phases/03-frontend-hardening/03-02-PLAN.md` | ✓ Complete | Fix SW + cleanup index.html |
 
 ## Session Continuity
 
 Last session: 2026-06-12
-Stopped at: Plan 03-01 created, menunggu approval
-Next action: Review plan lalu jalankan /paul:apply .paul/phases/03-frontend-hardening/03-01-PLAN.md
-Resume file: .paul/phases/03-frontend-hardening/03-01-PLAN.md
+Stopped at: Milestone v1.2 complete — semua 3 milestone shipped
+Next action: `/paul:milestone` untuk milestone baru, atau pause
+Resume file: .paul/ROADMAP.md
 
 ## Decisions
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
-| 2026-06-11 | Deploy via Vercel GitHub integration | Auto-deploy per push, SSL gratis, zero-config untuk Vite |
-| 2026-06-11 | Domain: paypro.redone.my.id via CNAME ke cname.vercel-dns.com | Standard Vercel subdomain config |
-| 2026-06-12 | Canonical PWA files ada di public/ | Vite serves public/ — root sw.js & manifest.json adalah dead code |
-| 2026-06-12 | Hapus recharts | Tidak diimport di manapun — 200KB bundle bloat |
-| 2026-06-12 | Hapus Kasbon.tsx | Deprecated, tidak diimport — fungsionalitas ada di Payments.tsx |
-| 2026-06-12 | Drizzle ORM + @neondatabase/serverless | Vercel Functions tidak support TCP — HTTP driver required |
-| 2026-06-12 | Hapus "type": "module" + tambah api/tsconfig.json | ncc (CJS bundler) incompatible dengan ESM module loading |
+| 2026-06-11 | Deploy via Vercel GitHub integration | Auto-deploy per push, SSL gratis |
+| 2026-06-12 | Drizzle ORM + @neondatabase/serverless | Vercel Functions tidak support TCP |
+| 2026-06-12 | Hapus "type": "module" + api/tsconfig.json | ncc CJS incompatible dengan ESM |
+| 2026-06-12 | Tailwind v3 via PostCSS | v4 config format berbeda; v3 match existing |
+| 2026-06-12 | Bump SW CACHE_NAME v5→v6 | Force replace SW lama yang cache CDN URL |
 
 ## Accumulated Context
 
 ### What Was Built
 
-**Milestone v1.0 (Phase 1):**
-- App live di paypro.redone.my.id (Vercel, HTTPS)
-- Cleanup: hapus recharts (200KB), Kasbon.tsx, duplicate PWA files
+**Milestone v1.0 (Phase 1):** App live di paypro.redone.my.id (Vercel, HTTPS, cleanup dead code)
 
-**Milestone v1.1 (Phase 2):**
-- db/schema.ts + db/index.ts: Drizzle client + 5 tabel NeonDB
-- api/: 6 Vercel Serverless Functions menggantikan Supabase PostgREST
-- services/dataService.ts: rewrite total 18 metode → fetch /api/*
-- services/supabaseClient.ts: dihapus
-- api/tsconfig.json: override CommonJS untuk @vercel/node
+**Milestone v1.1 (Phase 2):** NeonDB + Drizzle ORM, 6 Vercel Serverless Functions, rewrite dataService.ts
+
+**Milestone v1.2 (Phase 3):**
+- tailwind.config.js + postcss.config.js + index.css: Tailwind via PostCSS build
+- public/sw.js v6: clean urlsToCache, hapus Supabase check
+- index.html: mobile-web-app-capable meta, importmap bersih
 
 ### Known Concerns
 - Password stored plaintext di NeonDB — perlu hashing di milestone berikutnya
-- Tailwind CDN menyebabkan CORS error + SW fail (target Milestone v1.2)
+- Tailwind v3 — upgrade ke v4 perlu refactor config

@@ -1,7 +1,6 @@
-const CACHE_NAME = 'redonepaypro-v5';
+const CACHE_NAME = 'redonepaypro-v6';
 const urlsToCache = [
   '/',
-  'https://cdn.tailwindcss.com',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js'
 ];
@@ -35,9 +34,6 @@ self.addEventListener('fetch', (event) => {
 
   // Skip non-http (chrome-extension://, etc.)
   if (!url.protocol.startsWith('http')) return;
-
-  // Supabase API — Network Only, jangan cache
-  if (url.href.includes('supabase')) return;
 
   // Navigation (HTML) — Network First, fallback ke cache '/'
   // Fallback aktif untuk SEMUA respons non-ok (4xx/5xx) bukan hanya network error,

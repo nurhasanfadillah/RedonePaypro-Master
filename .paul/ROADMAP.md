@@ -47,24 +47,24 @@
 
 ## Milestone v1.2: Frontend Hardening
 
-**Status:** 🔄 In Progress — 2026-06-12
+**Status:** ✅ COMPLETE — 2026-06-12
 **Goal:** Hapus CDN Tailwind (CORS errors di production), fix PWA Service Worker, cleanup dead code di index.html.
 
 ---
 
 ### Phase 3: Frontend Hardening
 
-**Status:** 🔄 Planning
+**Status:** ✅ Complete — 2026-06-12
 **Goal:** Tailwind CSS di-bundle via PostCSS saat build, Service Worker tidak lagi mencache CDN URLs yang CORS-blocked, index.html bersih dari deprecated tags dan dead importmap entries.
 **Dependencies:** Phase 2 complete ✓
-**Plans:** 0/2 complete
+**Plans:** 2/2 complete
 
 **Deliverables:**
-- ☐ Tailwind CSS di-install sebagai PostCSS plugin (bukan CDN)
-- ☐ Custom theme (colors, animations) dipindahkan ke tailwind.config.js
-- ☐ Service Worker tidak mencache cdn.tailwindcss.com
-- ☐ Meta tag `apple-mobile-web-app-capable` diperbaiki
-- ☐ Importmap dibersihkan dari @supabase/supabase-js + recharts
+- ✓ Tailwind CSS di-install sebagai PostCSS plugin (bukan CDN)
+- ✓ Custom theme (colors, animations) dipindahkan ke tailwind.config.js
+- ✓ Service Worker tidak mencache cdn.tailwindcss.com
+- ✓ Meta tag `apple-mobile-web-app-capable` diperbaiki
+- ✓ Importmap dibersihkan dari @supabase/supabase-js + recharts
 
 ---
 
@@ -73,4 +73,4 @@
 Phases complete: 2 of 3 (67%)
 Milestone v1.0: ✅ shipped
 Milestone v1.1: ✅ shipped
-Milestone v1.2: 🔄 in progress
+Milestone v1.2: ✅ shipped
