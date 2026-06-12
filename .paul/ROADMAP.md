@@ -124,25 +124,25 @@
 
 ### Phase 8: Mobile Card UI
 
-**Status:** 🔄 Planning — 2026-06-13
-**Goal:** Hapus alamat dari mobile card Karyawan; redesign mobile card Komponen menjadi grid 2 kolom dengan toggle aksi edit/hapus saat diklik.
+**Status:** ✅ Complete — 2026-06-13
+**Goal:** Hapus alamat dari mobile card Karyawan; redesign mobile card Komponen menjadi 2 kolom dengan toggle aksi edit/hapus saat diklik.
 **Dependencies:** Phase 7 complete ✓
-**Plans:** 0/1 complete
+**Plans:** 1/1 complete
 
 **Deliverables:**
-- [ ] Employees mobile card: tanpa baris alamat
-- [ ] Components mobile card: ID kiri-atas, nama kiri-bawah, harga kanan (merge 2 baris)
-- [ ] Components mobile card: aksi edit/hapus muncul saat card diklik (ADMIN only)
+- ✓ Employees mobile card: tanpa baris alamat
+- ✓ Components mobile card: ID kiri-atas, nama kiri-bawah, harga kanan (span penuh)
+- ✓ Components mobile card: aksi edit/hapus muncul saat card diklik (ADMIN only)
 
 ---
 
 ## Progress
 
-Phases complete: 7 of 8
+Phases complete: 8 of 8 (100%)
 Milestone v1.0: ✅ shipped
 Milestone v1.1: ✅ shipped
 Milestone v1.2: ✅ shipped
 Milestone v1.3: ✅ shipped
 Milestone v1.4: ✅ shipped
 Milestone v1.5: ✅ shipped
-Milestone v1.6: 🔄 in progress
+Milestone v1.6: ✅ shipped

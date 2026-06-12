@@ -1,10 +1,10 @@
 ## Current Position
 
-Milestone: v1.6 Mobile UI Polish — **In progress**
-Phase: 8 (Mobile Card UI) — Planning
-Plan: 08-01 created, awaiting approval
-Status: PLAN created, ready for APPLY
-Last activity: 2026-06-13 — Created .paul/phases/08-mobile-card-ui/08-01-PLAN.md
+Milestone: v1.6 Mobile UI Polish — **COMPLETE**
+Phase: 8 (Mobile Card UI) — **Complete**
+Plan: 08-01 complete
+Status: UNIFY done — Phase 8 shipped
+Last activity: 2026-06-13 — Mobile card UI: hapus alamat Employees + redesign Components 2 kolom
 
 Progress:
 - Milestone v1.0: [██████████] 100% (complete)
@@ -13,15 +13,15 @@ Progress:
 - Milestone v1.3: [██████████] 100% (complete)
 - Milestone v1.4: [██████████] 100% (complete)
 - Milestone v1.5: [██████████] 100% (complete)
-- Milestone v1.6: [░░░░░░░░░░] 0%
-- Phase 8: [░░░░░░░░░░] 0% (0/1 plans)
+- Milestone v1.6: [██████████] 100% (complete)
+- Phase 8: [██████████] 100% (1/1 plans)
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ○        ○     [Plan created, awaiting approval]
+  ✓        ✓        ✓     [Loop complete — Phase 8 shipped]
 ```
 
 ## Plans in Phase 01
@@ -75,14 +75,14 @@ PLAN ──▶ APPLY ──▶ UNIFY
 
 | Plan | File | Status | Note |
 |------|------|--------|------|
-| 08-01 | `.paul/phases/08-mobile-card-ui/08-01-PLAN.md` | ⏳ Awaiting approval | Employees mobile (hapus alamat) + Components mobile (grid 2 kolom + toggle aksi) |
+| 08-01 | `.paul/phases/08-mobile-card-ui/08-01-PLAN.md` | ✓ Complete | Employees mobile (hapus alamat) + Components mobile (2 kolom + toggle aksi) |
 
 ## Session Continuity
 
 Last session: 2026-06-13
-Stopped at: Plan 08-01 created
-Next action: Review dan approve plan, lalu jalankan `/paul:apply .paul/phases/08-mobile-card-ui/08-01-PLAN.md`
-Resume file: .paul/phases/08-mobile-card-ui/08-01-PLAN.md
+Stopped at: Phase 8 complete — Milestone v1.6 shipped
+Next action: `/paul:milestone` untuk milestone baru, atau pause
+Resume file: .paul/ROADMAP.md
 
 ## Decisions
 

@@ -55,6 +55,8 @@ Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT
 | ✓ Data master karyawan di-seed (27 orang) | Phase 5 | KPRD-001 s/d KPRD-049 via db/seed.ts |
 | ✓ Data master komponen di-seed (61 item) | Phase 5 | KP-001 s/d KP-061 via db/seed.ts |
 | ✓ Ikon app modern (SVG + PNG local) | Phase 7 | Monogram "RP", zero CDN dependency |
+| ✓ Mobile card Karyawan tanpa alamat | Phase 8 | Ringkas: hanya nama + ID + status akses |
+| ✓ Mobile card Komponen 2 kolom + toggle aksi | Phase 8 | ID+nama kiri, harga kanan; edit/hapus saat diklik (ADMIN) |
 
 ## Key Decisions (Phase 7)
 | Decision | Rationale |
