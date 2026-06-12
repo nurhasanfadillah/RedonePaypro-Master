@@ -28,12 +28,25 @@ Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT
 - ~~recharts~~ — dihapus Phase 1 (tidak diimport, 200KB bloat)
 - ~~@supabase/supabase-js~~ — dihapus Phase 2 (migrasi ke NeonDB)
 
-## Deployment (v1.0 — Shipped 2026-06-12)
+## Deployment (v1.1 — Shipped 2026-06-12)
 - **Production URL:** https://paypro.redone.my.id
 - **Hosting:** Vercel (project: redone-paypro)
 - **CI/CD:** GitHub → Vercel auto-deploy (push ke `main`)
 - **SSL:** Let's Encrypt via Vercel (aktif)
-- **Env vars:** VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY terset di Vercel
+- **Database:** NeonDB (PostgreSQL) via Drizzle ORM + @neondatabase/serverless
+- **API:** 6 Vercel Serverless Functions di `/api/`
+
+## Requirements Validated
+
+| Requirement | Phase | Notes |
+|-------------|-------|-------|
+| ✓ App live di paypro.redone.my.id | Phase 1 | HTTPS, auto-deploy aktif |
+| ✓ PWA (sw.js + manifest.json) berjalan | Phase 1 | Files di public/ |
+| ✓ Database NeonDB via Drizzle ORM | Phase 2 | 5 tabel, schema live |
+| ✓ Backend Vercel Serverless Functions | Phase 2 | 6 routes di /api/ |
+| ✓ Zero Supabase dependency | Phase 2 | @supabase/supabase-js dihapus |
+| ✓ Semua CRUD via /api/* | Phase 2 | dataService.ts rewrite total |
+| ✓ Login/Auth via NeonDB | Phase 2 | /api/auth, session di localStorage |
 
 ## Key Decisions (Phase 1)
 | Decision | Rationale |
@@ -44,9 +57,21 @@ Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT
 | Hapus `recharts` | 200KB bundle bloat, tidak diimport |
 | State-based routing → tidak butuh `vercel.json` | App tidak pakai URL routing |
 
+## Key Decisions (Phase 2)
+| Decision | Rationale |
+|----------|-----------|
+| Drizzle ORM + @neondatabase/serverless HTTP driver | Vercel Functions tidak support TCP — HTTP driver required |
+| Hapus `"type": "module"` dari package.json | ncc (bundler @vercel/node) output CJS; type:module = ESM conflict |
+| `api/tsconfig.json` dengan `module: CommonJS` | Override root tsconfig agar ncc compile ke CJS — perlu dipertahankan |
+| apiFetch helper tanpa auth headers | API tidak require auth (konsistent dengan anon key model sebelumnya) |
+| Password plaintext di DB (deferred hardening) | Scope migrasi, bukan security hardening — perlu diperhatikan di milestone berikutnya |
+
 ## Environment Variables
 | Variable | Purpose |
 |----------|---------|
 | `DATABASE_URL` | NeonDB pooled connection string (digunakan Vercel Functions saat runtime) |
 | `DATABASE_URL_UNPOOLED` | NeonDB direct connection string (digunakan drizzle-kit push/pull) |
 | `GEMINI_API_KEY` | Google Gemini (belum aktif digunakan) |
+
+---
+*Last updated: 2026-06-12 after Phase 2 (02-migrate-neondb)*
