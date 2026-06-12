@@ -24,7 +24,24 @@ Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT
 ## Tech Stack
 - React 19 + TypeScript + Vite 6
 - Supabase JS SDK v2
-- Tailwind CSS (CDN), lucide-react, recharts, react-hot-toast
+- Tailwind CSS (CDN), lucide-react, react-hot-toast
+- ~~recharts~~ — dihapus Phase 1 (tidak diimport, 200KB bloat)
+
+## Deployment (v1.0 — Shipped 2026-06-12)
+- **Production URL:** https://paypro.redone.my.id
+- **Hosting:** Vercel (project: redone-paypro)
+- **CI/CD:** GitHub → Vercel auto-deploy (push ke `main`)
+- **SSL:** Let's Encrypt via Vercel (aktif)
+- **Env vars:** VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY terset di Vercel
+
+## Key Decisions (Phase 1)
+| Decision | Rationale |
+|----------|-----------|
+| Deploy via Vercel CLI, bukan manual dashboard | Repeatable, automatable |
+| Canonical PWA files di `public/`, bukan root | Vite hanya serve `public/` |
+| Hapus `Kasbon.tsx` | Deprecated, fungsionalitas ada di `Payments.tsx` |
+| Hapus `recharts` | 200KB bundle bloat, tidak diimport |
+| State-based routing → tidak butuh `vercel.json` | App tidak pakai URL routing |
 
 ## Environment Variables
 | Variable | Purpose |
