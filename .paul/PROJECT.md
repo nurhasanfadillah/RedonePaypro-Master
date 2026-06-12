@@ -51,9 +51,22 @@ Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT
 | ✓ PWA SW bersih (tidak cache CDN URLs) | Phase 3 | CACHE_NAME v6, urlsToCache clean |
 | ✓ PWA meta tags lengkap | Phase 3 | apple + mobile-web-app-capable |
 | ✓ importmap bersih dari dead entries | Phase 3 | recharts + supabase dihapus |
-| ✓ Label button ringkas (satu kata) di header | Phase 4 | Ekspor/Cleanup/Input (Produksi & Pembayaran), Periode/Detail/Global (Rekap) |
+| ✓ Label button ringkas (satu kata) di header | Phase 6 | Employees & Components: Cleanup Data→Cleanup, Ekspor PDF→Ekspor |
 | ✓ Data master karyawan di-seed (27 orang) | Phase 5 | KPRD-001 s/d KPRD-049 via db/seed.ts |
 | ✓ Data master komponen di-seed (61 item) | Phase 5 | KP-001 s/d KP-061 via db/seed.ts |
+| ✓ Ikon app modern (SVG + PNG local) | Phase 7 | Monogram "RP", zero CDN dependency |
+
+## Key Decisions (Phase 7)
+| Decision | Rationale |
+|----------|-----------|
+| SVG custom monogram "RP" sebagai app icon | Modern, scalable, zero CDN dependency |
+| PNG generated via sharp (temp, removed setelah use) | Satu kali konversi untuk PWA manifest + iOS |
+| Bump manifest `id` ke v2 | Force PWA re-register dengan ikon baru |
+
+## Key Decisions (Phase 6)
+| Decision | Rationale |
+|----------|-----------|
+| Label button Cleanup/Ekspor/Tambah di Employees & Components | Konsisten dengan Phase 4 (satu kata) |
 
 ## Key Decisions (Phase 5)
 | Decision | Rationale |
@@ -100,4 +113,4 @@ Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT
 | `GEMINI_API_KEY` | Google Gemini (belum aktif digunakan) |
 
 ---
-*Last updated: 2026-06-12 after Phase 5 (05-data-seeding)*
+*Last updated: 2026-06-12 after Phase 7 (07-modernize-app-icon)*

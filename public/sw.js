@@ -1,4 +1,4 @@
-const CACHE_NAME = 'redonepaypro-v6';
+const CACHE_NAME = 'redonepaypro-v7';
 const urlsToCache = [
   '/',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
@@ -47,12 +47,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip API requests — do not cache
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   // Static Assets — Stale-While-Revalidate
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const network = fetch(event.request).then((res) => {
         if (res && res.status === 200 && (res.type === 'basic' || res.type === 'cors')) {
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, res.clone()));
+          const resClone = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
         }
         return res;
       }).catch(() => {});

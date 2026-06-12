@@ -267,9 +267,7 @@ const AppLayout: React.FC = () => {
         <div className="h-full flex flex-col">
           <div className="p-6 border-b border-slate-100 dark:border-dark-border flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold">
-                R
-              </div>
+              <img src="/icon.svg" alt="RedonePaypro" className="w-8 h-8 rounded-lg" />
               <span className="font-bold text-lg tracking-tight">Redone<span className="text-primary-600">Paypro</span></span>
             </div>
             <button onClick={() => setSidebarOpen(false)} className="md:hidden text-slate-400">

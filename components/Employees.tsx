@@ -446,13 +446,13 @@ const Employees: React.FC = () => {
             onClick={() => setShowCleanupModal(true)} 
             className="flex-1 sm:flex-none flex justify-center items-center gap-2 px-4 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/30 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/40 transition-all font-medium text-sm"
           >
-            <Trash2 size={18} /> Cleanup Data
+            <Trash2 size={18} /> Cleanup
           </button>
           <button 
             onClick={handlePrint} 
             className="flex-1 sm:flex-none flex justify-center items-center gap-2 px-4 py-2.5 bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl hover:bg-slate-900 dark:hover:bg-slate-200 shadow-lg shadow-slate-800/20 transition-all font-medium text-sm"
           >
-            <Printer size={18} /> Ekspor PDF
+            <Printer size={18} /> Ekspor
           </button>
           <button 
             onClick={() => handleOpen()} 

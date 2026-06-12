@@ -1,10 +1,10 @@
 ## Current Position
 
-Milestone: v1.4 Data Seeding — **COMPLETE**
-Phase: 5 of 5 (Seed Data Master) — **Complete**
-Plan: 05-01 complete
-Status: UNIFY done — Milestone v1.4 shipped
-Last activity: 2026-06-12 — Phase 5 complete, 27 karyawan + 61 komponen ter-seed
+Milestone: v1.5 UI Modernization — **COMPLETE**
+Phase: 7 (Modernize App Icon) — **Complete**
+Plan: 07-01 complete
+Status: UNIFY done — Phase 7 shipped
+Last activity: 2026-06-12 — Ikon app modern: SVG + PNG lokal, zero CDN dependency
 
 Progress:
 - Milestone v1.0: [██████████] 100% (complete)
@@ -12,14 +12,15 @@ Progress:
 - Milestone v1.2: [██████████] 100% (complete)
 - Milestone v1.3: [██████████] 100% (complete)
 - Milestone v1.4: [██████████] 100% (complete)
-- Phase 5: [██████████] 100% (1/1 plans)
+- Milestone v1.5: [██████████] 100% (complete)
+- Phase 7: [██████████] 100% (1/1 plans)
 
 ## Loop Position
 
 Current loop state:
 ```
-PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ✓     [Loop complete — Phase 5 & Milestone v1.4 shipped]
+DISCOVER ──▶ PLAN ──▶ APPLY ──▶ UNIFY
+    ✓          ✓        ✓        ✓     [Loop complete — Phase 7 shipped]
 ```
 
 ## Plans in Phase 01
@@ -51,10 +52,28 @@ PLAN ──▶ APPLY ──▶ UNIFY
 |------|------|--------|------|
 | 04-01 | `.paul/phases/04-ui-label-polish/04-01-PLAN.md` | ✓ Complete | Persingkat label button di 3 halaman |
 
+## Plans in Phase 05
+
+| Plan | File | Status | Note |
+|------|------|--------|------|
+| 05-01 | `.paul/phases/05-data-seeding/05-01-PLAN.md` | ✓ Complete | Seed 27 karyawan + 61 komponen |
+
+## Plans in Phase 06
+
+| Plan | File | Status | Note |
+|------|------|--------|------|
+| 06-01 | `.paul/phases/06-ui-label-polish-employees-components/06-01-PLAN.md` | ✓ Complete | Persingkat label button Employees & Components |
+
+## Plans in Phase 07
+
+| Plan | File | Status | Note |
+|------|------|--------|------|
+| 07-01 | `.paul/phases/07-modernize-app-icon/07-01-PLAN.md` | ✓ Complete | SVG icon + PNG set + manifest/index.html/App.tsx update |
+
 ## Session Continuity
 
 Last session: 2026-06-12
-Stopped at: Milestone v1.4 complete — semua 5 milestone shipped
+Stopped at: Phase 7 complete — Milestone v1.5 shipped
 Next action: `/paul:milestone` untuk milestone baru, atau pause
 Resume file: .paul/ROADMAP.md
 
@@ -69,6 +88,8 @@ Resume file: .paul/ROADMAP.md
 | 2026-06-12 | Bump SW CACHE_NAME v5→v6 | Force replace SW lama yang cache CDN URL |
 | 2026-06-12 | Label button satu kata (Ekspor, Cleanup, Input, dll.) | Icon sudah menjelaskan fungsi; label ringkas hemat ruang di mobile |
 | 2026-06-12 | Seed via npx tsx db/seed.ts (bukan API endpoint) | Tidak perlu server running; lebih cepat untuk bulk insert |
+| 2026-06-12 | SVG favicon + PNG fallback untuk PWA icon | SVG crisp di semua ukuran, zero CDN dependency |
+| 2026-06-12 | Monogram "RP" + green (#22c55e) + dark bg (#0f172a) | Konsisten dengan theme-color & background_color manifest |
 
 ## Accumulated Context
 
@@ -88,6 +109,18 @@ Resume file: .paul/ROADMAP.md
 
 **Milestone v1.4 (Phase 5):**
 - db/seed.ts: 27 karyawan + 61 komponen ter-seed ke NeonDB production
+
+**Phase 6:**
+- Employees.tsx: `Cleanup Data` → `Cleanup`, `Ekspor PDF` → `Ekspor`
+- Components.tsx: `Cleanup Data` → `Cleanup`, `Ekspor PDF` → `Ekspor`
+
+**Phase 7:**
+- public/icon.svg: monogram "RP" SVG custom
+- public/icon-192.png, icon-512.png, apple-icon-180.png: PNG variants
+- manifest.json: local icon paths, id v2
+- index.html: SVG favicon + local apple-touch-icon
+- App.tsx: sidebar logo → SVG baru
+- Zero Flaticon CDN dependency
 
 ### Known Concerns
 - Password stored plaintext di NeonDB — perlu hashing di milestone berikutnya
