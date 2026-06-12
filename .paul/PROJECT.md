@@ -52,6 +52,15 @@ Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT
 | ✓ PWA meta tags lengkap | Phase 3 | apple + mobile-web-app-capable |
 | ✓ importmap bersih dari dead entries | Phase 3 | recharts + supabase dihapus |
 | ✓ Label button ringkas (satu kata) di header | Phase 4 | Ekspor/Cleanup/Input (Produksi & Pembayaran), Periode/Detail/Global (Rekap) |
+| ✓ Data master karyawan di-seed (27 orang) | Phase 5 | KPRD-001 s/d KPRD-049 via db/seed.ts |
+| ✓ Data master komponen di-seed (61 item) | Phase 5 | KP-001 s/d KP-061 via db/seed.ts |
+
+## Key Decisions (Phase 5)
+| Decision | Rationale |
+|----------|-----------|
+| Seed via `npx tsx db/seed.ts` (bukan API endpoint) | Tidak perlu dev server running; lebih cepat untuk bulk insert |
+| loadEnv() manual tanpa dotenv | Tidak menambah dependency ke project |
+| onConflictDoUpdate (upsert) | Script aman dijalankan ulang tanpa error duplikat |
 
 ## Key Decisions (Phase 4)
 | Decision | Rationale |
@@ -91,4 +100,4 @@ Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT
 | `GEMINI_API_KEY` | Google Gemini (belum aktif digunakan) |
 
 ---
-*Last updated: 2026-06-12 after Phase 4 (04-ui-label-polish)*
+*Last updated: 2026-06-12 after Phase 5 (05-data-seeding)*

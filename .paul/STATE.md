@@ -1,24 +1,25 @@
 ## Current Position
 
-Milestone: v1.3 UI Polish — **COMPLETE**
-Phase: 4 of 4 (UI Label Polish) — **Complete**
-Plan: 04-01 complete
-Status: UNIFY done — Milestone v1.3 shipped
-Last activity: 2026-06-12 — Phase 4 complete, label button dipersingkat
+Milestone: v1.4 Data Seeding — **COMPLETE**
+Phase: 5 of 5 (Seed Data Master) — **Complete**
+Plan: 05-01 complete
+Status: UNIFY done — Milestone v1.4 shipped
+Last activity: 2026-06-12 — Phase 5 complete, 27 karyawan + 61 komponen ter-seed
 
 Progress:
 - Milestone v1.0: [██████████] 100% (complete)
 - Milestone v1.1: [██████████] 100% (complete)
 - Milestone v1.2: [██████████] 100% (complete)
 - Milestone v1.3: [██████████] 100% (complete)
-- Phase 4: [██████████] 100% (1/1 plans)
+- Milestone v1.4: [██████████] 100% (complete)
+- Phase 5: [██████████] 100% (1/1 plans)
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ✓     [Loop complete — Phase 4 & Milestone v1.3 shipped]
+  ✓        ✓        ✓     [Loop complete — Phase 5 & Milestone v1.4 shipped]
 ```
 
 ## Plans in Phase 01
@@ -53,7 +54,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 ## Session Continuity
 
 Last session: 2026-06-12
-Stopped at: Milestone v1.3 complete — semua 4 milestone shipped
+Stopped at: Milestone v1.4 complete — semua 5 milestone shipped
 Next action: `/paul:milestone` untuk milestone baru, atau pause
 Resume file: .paul/ROADMAP.md
 
@@ -67,6 +68,7 @@ Resume file: .paul/ROADMAP.md
 | 2026-06-12 | Tailwind v3 via PostCSS | v4 config format berbeda; v3 match existing |
 | 2026-06-12 | Bump SW CACHE_NAME v5→v6 | Force replace SW lama yang cache CDN URL |
 | 2026-06-12 | Label button satu kata (Ekspor, Cleanup, Input, dll.) | Icon sudah menjelaskan fungsi; label ringkas hemat ruang di mobile |
+| 2026-06-12 | Seed via npx tsx db/seed.ts (bukan API endpoint) | Tidak perlu server running; lebih cepat untuk bulk insert |
 
 ## Accumulated Context
 
@@ -83,6 +85,9 @@ Resume file: .paul/ROADMAP.md
 
 **Milestone v1.3 (Phase 4):**
 - Production.tsx, Payments.tsx, RekapHasil.tsx: label button header dipersingkat ke satu kata
+
+**Milestone v1.4 (Phase 5):**
+- db/seed.ts: 27 karyawan + 61 komponen ter-seed ke NeonDB production
 
 ### Known Concerns
 - Password stored plaintext di NeonDB — perlu hashing di milestone berikutnya

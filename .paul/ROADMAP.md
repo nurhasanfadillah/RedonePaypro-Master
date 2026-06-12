@@ -91,10 +91,33 @@
 
 ---
 
+---
+
+## Milestone v1.4: Data Seeding
+
+**Status:** ✅ COMPLETE — 2026-06-12
+**Goal:** Isi NeonDB dengan data master karyawan (27 orang) dan komponen (61 item) dari dokumen perusahaan yang ada.
+
+---
+
+### Phase 5: Seed Data Master
+
+**Status:** ✅ Complete — 2026-06-12
+**Goal:** Jalankan seed script sekali untuk mengisi tabel `employees` dan `components` di NeonDB dengan data real dari PDF perusahaan.
+**Dependencies:** Phase 2 complete ✓
+**Plans:** 1/1 complete
+
+**Deliverables:**
+- ✓ 27 karyawan aktif ter-insert ke tabel `employees`
+- ✓ 61 komponen ter-insert ke tabel `components`
+
+---
+
 ## Progress
 
-Phases complete: 4 of 4 (100%)
+Phases complete: 5 of 5 (100%)
 Milestone v1.0: ✅ shipped
 Milestone v1.1: ✅ shipped
 Milestone v1.2: ✅ shipped
 Milestone v1.3: ✅ shipped
+Milestone v1.4: ✅ shipped
