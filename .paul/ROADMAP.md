@@ -17,10 +17,8 @@
 **Deliverables:**
 - ✓ App dapat diakses di https://paypro.redone.my.id
 - ✓ SSL certificate aktif (Let's Encrypt via Vercel)
-- ✓ .env.example terdokumentasi (3 vars + komentar)
+- ✓ .env.example terdokumentasi
 - ✓ Environment variables terkonfigurasi di Vercel
-
----
 
 ---
 
@@ -34,7 +32,7 @@
 ### Phase 2: Migrate to NeonDB
 
 **Status:** ✅ Complete — 2026-06-12
-**Goal:** App berjalan penuh dengan NeonDB sebagai database, tanpa dependensi Supabase apapun. Semua CRUD melalui Vercel Serverless Functions (`/api/`).
+**Goal:** App berjalan penuh dengan NeonDB sebagai database, tanpa dependensi Supabase apapun.
 **Dependencies:** Phase 1 complete ✓
 **Plans:** 3/3 complete
 
@@ -47,8 +45,32 @@
 
 ---
 
+## Milestone v1.2: Frontend Hardening
+
+**Status:** 🔄 In Progress — 2026-06-12
+**Goal:** Hapus CDN Tailwind (CORS errors di production), fix PWA Service Worker, cleanup dead code di index.html.
+
+---
+
+### Phase 3: Frontend Hardening
+
+**Status:** 🔄 Planning
+**Goal:** Tailwind CSS di-bundle via PostCSS saat build, Service Worker tidak lagi mencache CDN URLs yang CORS-blocked, index.html bersih dari deprecated tags dan dead importmap entries.
+**Dependencies:** Phase 2 complete ✓
+**Plans:** 0/2 complete
+
+**Deliverables:**
+- ☐ Tailwind CSS di-install sebagai PostCSS plugin (bukan CDN)
+- ☐ Custom theme (colors, animations) dipindahkan ke tailwind.config.js
+- ☐ Service Worker tidak mencache cdn.tailwindcss.com
+- ☐ Meta tag `apple-mobile-web-app-capable` diperbaiki
+- ☐ Importmap dibersihkan dari @supabase/supabase-js + recharts
+
+---
+
 ## Progress
 
-Phases complete: 2 of 2 (100%)
+Phases complete: 2 of 3 (67%)
 Milestone v1.0: ✅ shipped
 Milestone v1.1: ✅ shipped
+Milestone v1.2: 🔄 in progress
