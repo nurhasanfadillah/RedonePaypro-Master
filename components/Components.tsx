@@ -441,22 +441,22 @@ const Components: React.FC = () => {
             className="comp-card bg-white dark:bg-dark-card rounded-xl shadow-sm border border-slate-200 dark:border-dark-border overflow-hidden"
           >
             <div
-              className="grid p-3 gap-x-3 cursor-pointer active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors"
-              style={{ gridTemplateColumns: '1fr auto', gridTemplateRows: 'auto auto' }}
+              className="flex items-stretch p-3 gap-3 cursor-pointer active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors"
               onClick={() => setActiveMenu(activeMenu === comp.id ? null : comp.id)}
             >
-              <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded w-fit">
-                {comp.id}
-              </span>
-              <span
-                className="font-bold text-purple-600 dark:text-purple-400 text-sm text-right self-center"
-                style={{ gridRow: '1 / span 2' }}
-              >
-                Rp {comp.price.toLocaleString('id-ID')}
-              </span>
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm truncate mt-0.5">
-                {comp.name}
-              </h3>
+              <div className="flex flex-col flex-1 min-w-0 gap-1">
+                <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded w-fit">
+                  {comp.id}
+                </span>
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm truncate">
+                  {comp.name}
+                </h3>
+              </div>
+              <div className="flex items-center shrink-0">
+                <span className="font-bold text-purple-600 dark:text-purple-400 text-sm whitespace-nowrap">
+                  Rp {comp.price.toLocaleString('id-ID')}
+                </span>
+              </div>
             </div>
 
             {activeMenu === comp.id && user?.role === 'ADMIN' && (
