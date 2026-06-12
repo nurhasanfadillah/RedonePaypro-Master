@@ -113,11 +113,36 @@
 
 ---
 
+---
+
+## Milestone v1.6: Mobile UI Polish
+
+**Status:** 🔄 In progress
+**Goal:** Perbaiki tampilan mobile card di halaman Karyawan dan Komponen agar lebih ringkas dan fungsional.
+
+---
+
+### Phase 8: Mobile Card UI
+
+**Status:** 🔄 Planning — 2026-06-13
+**Goal:** Hapus alamat dari mobile card Karyawan; redesign mobile card Komponen menjadi grid 2 kolom dengan toggle aksi edit/hapus saat diklik.
+**Dependencies:** Phase 7 complete ✓
+**Plans:** 0/1 complete
+
+**Deliverables:**
+- [ ] Employees mobile card: tanpa baris alamat
+- [ ] Components mobile card: ID kiri-atas, nama kiri-bawah, harga kanan (merge 2 baris)
+- [ ] Components mobile card: aksi edit/hapus muncul saat card diklik (ADMIN only)
+
+---
+
 ## Progress
 
-Phases complete: 5 of 5 (100%)
+Phases complete: 7 of 8
 Milestone v1.0: ✅ shipped
 Milestone v1.1: ✅ shipped
 Milestone v1.2: ✅ shipped
 Milestone v1.3: ✅ shipped
 Milestone v1.4: ✅ shipped
+Milestone v1.5: ✅ shipped
+Milestone v1.6: 🔄 in progress

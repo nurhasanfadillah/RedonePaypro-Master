@@ -4,7 +4,7 @@ import { DataService } from '../services/dataService';
 import ConfirmModal from './ConfirmModal';
 import EmployeeDetail from './EmployeeDetail';
 import toast from 'react-hot-toast';
-import { Plus, Trash2, Edit2, Search, User, CheckCircle, X, MapPin, Printer, Loader2, Key, Shield, MoreVertical, AlertCircle, FileText } from 'lucide-react';
+import { Plus, Trash2, Edit2, Search, User, CheckCircle, X, Printer, Loader2, Key, Shield, MoreVertical, AlertCircle, FileText } from 'lucide-react';
 
 const Employees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -574,9 +574,6 @@ const Employees: React.FC = () => {
                    <div className="flex items-center gap-2">
                         <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-800 w-fit px-1.5 rounded">{emp.id}</span>
                         {hasAccess(emp.id) && <Shield size={10} className="text-green-500"/>}
-                   </div>
-                   <div className="flex items-center gap-1 text-[10px] text-slate-500 truncate">
-                      <MapPin size={10} /> {emp.address}
                    </div>
                  </div>
               </div>

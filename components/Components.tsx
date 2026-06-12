@@ -30,6 +30,9 @@ const Components: React.FC = () => {
   const [cleanupResult, setCleanupResult] = useState<{ success: number, failed: number } | null>(null);
   const [cleanupInputValue, setCleanupInputValue] = useState('');
 
+  // Menu State
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+
   useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
@@ -48,6 +51,17 @@ const Components: React.FC = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, itemsPerPage]);
+
+  // Close action menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: any) => {
+      if (activeMenu && !event.target.closest('.comp-card')) {
+        setActiveMenu(null);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [activeMenu]);
 
   const handleOpen = (comp?: Component) => {
     if (comp) {
@@ -422,34 +436,44 @@ const Components: React.FC = () => {
       {/* MOBILE COMPACT LIST VIEW */}
       <div className="md:hidden space-y-2">
         {currentItems.map(comp => (
-          <div key={comp.id} className="bg-white dark:bg-dark-card p-3 rounded-xl shadow-sm border border-slate-200 dark:border-dark-border">
-            <div className="flex justify-between items-start gap-3">
-               <div className="flex-1 min-w-0">
-                 <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm truncate">{comp.name}</h3>
-                 <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded mt-0.5 inline-block">{comp.id}</span>
-               </div>
-               <div className="text-right whitespace-nowrap">
-                 <span className="font-bold text-purple-600 dark:text-purple-400 text-sm">
-                   Rp {comp.price.toLocaleString('id-ID')}
-                 </span>
-               </div>
+          <div
+            key={comp.id}
+            className="comp-card bg-white dark:bg-dark-card rounded-xl shadow-sm border border-slate-200 dark:border-dark-border overflow-hidden"
+          >
+            <div
+              className="grid p-3 gap-x-3 cursor-pointer active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors"
+              style={{ gridTemplateColumns: '1fr auto', gridTemplateRows: 'auto auto' }}
+              onClick={() => setActiveMenu(activeMenu === comp.id ? null : comp.id)}
+            >
+              <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded w-fit">
+                {comp.id}
+              </span>
+              <span
+                className="font-bold text-purple-600 dark:text-purple-400 text-sm text-right self-center"
+                style={{ gridRow: '1 / span 2' }}
+              >
+                Rp {comp.price.toLocaleString('id-ID')}
+              </span>
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm truncate mt-0.5">
+                {comp.name}
+              </h3>
             </div>
-            
-            {user?.role === 'ADMIN' && (
-                <div className="flex justify-end gap-2 border-t border-slate-50 dark:border-slate-800 pt-1.5 mt-1.5">
-                <button 
-                    onClick={() => handleOpen(comp)} 
-                    className="flex items-center gap-1 text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
+
+            {activeMenu === comp.id && user?.role === 'ADMIN' && (
+              <div className="flex gap-2 px-3 pb-3 border-t border-slate-100 dark:border-slate-800 pt-2">
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleOpen(comp); setActiveMenu(null); }}
+                  className="flex-1 flex justify-center items-center gap-1 text-xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg active:scale-95 transition-transform"
                 >
-                    Edit
+                  <Edit2 size={13} /> Edit
                 </button>
-                <button 
-                    onClick={() => handleRequestDelete(comp)} 
-                    className="flex items-center gap-1 text-[10px] font-bold text-red-600 bg-red-50 dark:bg-red-900/20 px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleRequestDelete(comp); setActiveMenu(null); }}
+                  className="flex-1 flex justify-center items-center gap-1 text-xs font-bold text-red-600 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg active:scale-95 transition-transform"
                 >
-                    Hapus
+                  <Trash2 size={13} /> Hapus
                 </button>
-                </div>
+              </div>
             )}
           </div>
         ))}

@@ -1,10 +1,10 @@
 ## Current Position
 
-Milestone: v1.5 UI Modernization — **COMPLETE**
-Phase: 7 (Modernize App Icon) — **Complete**
-Plan: 07-01 complete
-Status: UNIFY done — Phase 7 shipped
-Last activity: 2026-06-12 — Ikon app modern: SVG + PNG lokal, zero CDN dependency
+Milestone: v1.6 Mobile UI Polish — **In progress**
+Phase: 8 (Mobile Card UI) — Planning
+Plan: 08-01 created, awaiting approval
+Status: PLAN created, ready for APPLY
+Last activity: 2026-06-13 — Created .paul/phases/08-mobile-card-ui/08-01-PLAN.md
 
 Progress:
 - Milestone v1.0: [██████████] 100% (complete)
@@ -13,14 +13,15 @@ Progress:
 - Milestone v1.3: [██████████] 100% (complete)
 - Milestone v1.4: [██████████] 100% (complete)
 - Milestone v1.5: [██████████] 100% (complete)
-- Phase 7: [██████████] 100% (1/1 plans)
+- Milestone v1.6: [░░░░░░░░░░] 0%
+- Phase 8: [░░░░░░░░░░] 0% (0/1 plans)
 
 ## Loop Position
 
 Current loop state:
 ```
-DISCOVER ──▶ PLAN ──▶ APPLY ──▶ UNIFY
-    ✓          ✓        ✓        ✓     [Loop complete — Phase 7 shipped]
+PLAN ──▶ APPLY ──▶ UNIFY
+  ✓        ○        ○     [Plan created, awaiting approval]
 ```
 
 ## Plans in Phase 01
@@ -70,12 +71,18 @@ DISCOVER ──▶ PLAN ──▶ APPLY ──▶ UNIFY
 |------|------|--------|------|
 | 07-01 | `.paul/phases/07-modernize-app-icon/07-01-PLAN.md` | ✓ Complete | SVG icon + PNG set + manifest/index.html/App.tsx update |
 
+## Plans in Phase 08
+
+| Plan | File | Status | Note |
+|------|------|--------|------|
+| 08-01 | `.paul/phases/08-mobile-card-ui/08-01-PLAN.md` | ⏳ Awaiting approval | Employees mobile (hapus alamat) + Components mobile (grid 2 kolom + toggle aksi) |
+
 ## Session Continuity
 
-Last session: 2026-06-12
-Stopped at: Phase 7 complete — Milestone v1.5 shipped
-Next action: `/paul:milestone` untuk milestone baru, atau pause
-Resume file: .paul/ROADMAP.md
+Last session: 2026-06-13
+Stopped at: Plan 08-01 created
+Next action: Review dan approve plan, lalu jalankan `/paul:apply .paul/phases/08-mobile-card-ui/08-01-PLAN.md`
+Resume file: .paul/phases/08-mobile-card-ui/08-01-PLAN.md
 
 ## Decisions
 
