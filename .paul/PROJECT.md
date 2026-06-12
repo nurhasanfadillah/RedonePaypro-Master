@@ -4,14 +4,14 @@
 Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT. REDONE BERKAH MANDIRI UTAMA. Mengelola pencatatan hasil produksi harian, pembayaran gaji/kasbon, dan laporan keuangan per karyawan.
 
 ## Application Type
-- Frontend-only SPA (React + Vite)
-- Backend-as-a-Service: Supabase (PostgreSQL)
+- Frontend SPA (React + Vite)
+- Backend: Vercel Serverless Functions di `/api/` + NeonDB (PostgreSQL via Drizzle ORM)
 - Target hosting: Vercel
 - Target domain: paypro.redone.my.id
 
 ## Core Constraints
-- Tidak ada custom backend — hanya Supabase
-- State-based routing (bukan URL routing) — tidak perlu vercel.json rewrites
+- Backend: Vercel Functions di /api/ (server-side, credentials tidak di-expose ke browser)
+- State-based routing (bukan URL routing) — vercel.json punya 2 rules: api pass-through + SPA fallback
 - PWA (sw.js + manifest.json harus tersedia di root domain)
 - Tailwind CSS dan jsPDF diload via CDN (bukan npm)
 
@@ -23,9 +23,10 @@ Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT
 
 ## Tech Stack
 - React 19 + TypeScript + Vite 6
-- Supabase JS SDK v2
+- Drizzle ORM + @neondatabase/serverless (HTTP driver)
 - Tailwind CSS (CDN), lucide-react, react-hot-toast
 - ~~recharts~~ — dihapus Phase 1 (tidak diimport, 200KB bloat)
+- ~~@supabase/supabase-js~~ — dihapus Phase 2 (migrasi ke NeonDB)
 
 ## Deployment (v1.0 — Shipped 2026-06-12)
 - **Production URL:** https://paypro.redone.my.id
@@ -46,6 +47,6 @@ Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT
 ## Environment Variables
 | Variable | Purpose |
 |----------|---------|
-| `VITE_SUPABASE_URL` | Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | Supabase anon/public key |
+| `DATABASE_URL` | NeonDB pooled connection string (digunakan Vercel Functions saat runtime) |
+| `DATABASE_URL_UNPOOLED` | NeonDB direct connection string (digunakan drizzle-kit push/pull) |
 | `GEMINI_API_KEY` | Google Gemini (belum aktif digunakan) |

@@ -22,7 +22,33 @@
 
 ---
 
+---
+
+## Milestone v1.1: NeonDB Migration
+
+**Status:** 🔄 In progress — 2026-06-12
+**Goal:** Migrasi database dari Supabase ke NeonDB dengan Drizzle ORM + Vercel Serverless Functions sebagai backend layer.
+
+---
+
+### Phase 2: Migrate to NeonDB
+
+**Status:** 🔄 Planning — 2026-06-12
+**Goal:** App berjalan penuh dengan NeonDB sebagai database, tanpa dependensi Supabase apapun. Semua CRUD melalui Vercel Serverless Functions (`/api/`).
+**Dependencies:** Phase 1 complete ✓
+**Plans:** 0/3 complete
+
+**Deliverables:**
+- ☐ Schema 5 tabel live di NeonDB (via drizzle-kit push)
+- ☐ 6 Vercel Serverless Function files di /api/
+- ☐ dataService.ts menggunakan fetch ke /api/ (bukan Supabase)
+- ☐ @supabase/supabase-js dihapus dari project
+- ☐ App berjalan di https://paypro.redone.my.id dengan NeonDB
+
+---
+
 ## Progress
 
-Phases complete: 1 of 1 (100%)
-Milestone: ✅ v1.0 shipped
+Phases complete: 1 of 2 (50%)
+Milestone v1.0: ✅ shipped
+Milestone v1.1: 🔄 in progress

@@ -1,60 +1,47 @@
 import { Employee, Component, ProductionLog, Payment, UserAccount } from '../types';
-import { supabase } from './supabaseClient';
+
+async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(url, options);
+  if (!res.ok) {
+    let message: string;
+    try {
+      const body = await res.json();
+      message = body.error || `HTTP ${res.status}`;
+    } catch {
+      message = `HTTP ${res.status}`;
+    }
+    throw new Error(message);
+  }
+  return res.json() as Promise<T>;
+}
+
+const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
 export const DataService = {
-  init: async () => {
-    // Check connection or perform initial sync if needed
-    // In Supabase context, initialization is mostly handled by the client creation
-    // We might check if the default admin exists if the table is empty, but SQL seed handles that.
-  },
+  init: async () => {},
 
   // --- EMPLOYEES ---
   getEmployees: async (): Promise<Employee[]> => {
-    const { data, error } = await supabase
-      .from('employees')
-      .select('*')
-      .limit(999999)
-      .order('id', { ascending: true });
-    
-    if (error) throw error;
-    return data || [];
+    return apiFetch<Employee[]>('/api/employees');
   },
 
   saveEmployee: async (emp: Employee) => {
-    const { data } = await supabase.from('employees').select('id').eq('id', emp.id).single();
-    
-    if (data) {
-        // Update
-        const { error } = await supabase.from('employees').update({
-            name: emp.name,
-            address: emp.address
-        }).eq('id', emp.id);
-        if (error) throw error;
-    } else {
-        // Insert
-        const { error } = await supabase.from('employees').insert([{
-            id: emp.id,
-            name: emp.name,
-            address: emp.address
-        }]);
-        if (error) throw error;
-    }
+    await apiFetch('/api/employees', {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(emp),
+    });
   },
 
   deleteEmployee: async (id: string) => {
-    const { error } = await supabase.from('employees').delete().eq('id', id);
-    if (error) throw error;
-    // User deletion handled by DB constraint or manual logic if needed, 
-    // but we can also remove the associated user
-    await DataService.deleteUserByEmployeeId(id);
+    await apiFetch(`/api/employees?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
   },
 
-  cleanupEmployees: async (): Promise<{ successCount: number, failedCount: number }> => {
-    const employees = await DataService.getEmployees();
+  cleanupEmployees: async (): Promise<{ successCount: number; failedCount: number }> => {
+    const emps = await DataService.getEmployees();
     let successCount = 0;
     let failedCount = 0;
-
-    for (const emp of employees) {
+    for (const emp of emps) {
       const { hasDependencies } = await DataService.checkEmployeeDependencies(emp.id);
       if (hasDependencies) {
         failedCount++;
@@ -62,7 +49,7 @@ export const DataService = {
         try {
           await DataService.deleteEmployee(emp.id);
           successCount++;
-        } catch (e) {
+        } catch {
           failedCount++;
         }
       }
@@ -71,67 +58,33 @@ export const DataService = {
   },
 
   checkEmployeeDependencies: async (id: string) => {
-    const { count: prodCount } = await supabase
-      .from('production_logs')
-      .select('*', { count: 'exact', head: true })
-      .eq('employee_id', id);
-
-    const { count: paymentCount } = await supabase
-      .from('payments')
-      .select('*', { count: 'exact', head: true })
-      .eq('employee_id', id);
-
-    const pCount = prodCount || 0;
-    const kCount = paymentCount || 0;
-
-    return {
-      hasDependencies: pCount > 0 || kCount > 0,
-      details: { production: pCount, payments: kCount }
-    };
+    return apiFetch<{ hasDependencies: boolean; details: { production: number; payments: number } }>(
+      `/api/employees?checkDeps=1&id=${encodeURIComponent(id)}`
+    );
   },
 
   // --- COMPONENTS ---
   getComponents: async (): Promise<Component[]> => {
-    const { data, error } = await supabase
-      .from('components')
-      .select('*')
-      .limit(999999)
-      .order('id', { ascending: true });
-
-    if (error) throw error;
-    return data || [];
+    return apiFetch<Component[]>('/api/components');
   },
 
   saveComponent: async (comp: Component) => {
-    const { data } = await supabase.from('components').select('id').eq('id', comp.id).single();
-
-    if (data) {
-        const { error } = await supabase.from('components').update({
-            name: comp.name,
-            price: comp.price
-        }).eq('id', comp.id);
-        if (error) throw error;
-    } else {
-        const { error } = await supabase.from('components').insert([{
-            id: comp.id,
-            name: comp.name,
-            price: comp.price
-        }]);
-        if (error) throw error;
-    }
+    await apiFetch('/api/components', {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(comp),
+    });
   },
 
   deleteComponent: async (id: string) => {
-    const { error } = await supabase.from('components').delete().eq('id', id);
-    if (error) throw error;
+    await apiFetch(`/api/components?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
   },
 
-  cleanupComponents: async (): Promise<{ successCount: number, failedCount: number }> => {
-    const components = await DataService.getComponents();
+  cleanupComponents: async (): Promise<{ successCount: number; failedCount: number }> => {
+    const comps = await DataService.getComponents();
     let successCount = 0;
     let failedCount = 0;
-
-    for (const comp of components) {
+    for (const comp of comps) {
       const { hasDependencies } = await DataService.checkComponentDependencies(comp.id);
       if (hasDependencies) {
         failedCount++;
@@ -139,7 +92,7 @@ export const DataService = {
         try {
           await DataService.deleteComponent(comp.id);
           successCount++;
-        } catch (e) {
+        } catch {
           failedCount++;
         }
       }
@@ -148,224 +101,104 @@ export const DataService = {
   },
 
   checkComponentDependencies: async (id: string) => {
-    const { count } = await supabase
-        .from('production_logs')
-        .select('*', { count: 'exact', head: true })
-        .eq('component_id', id);
-    
-    return {
-      hasDependencies: (count || 0) > 0,
-      details: { production: count || 0 }
-    };
+    return apiFetch<{ hasDependencies: boolean; details: { production: number } }>(
+      `/api/components?checkDeps=1&id=${encodeURIComponent(id)}`
+    );
   },
 
   // --- PRODUCTION ---
   getProductionLogs: async (): Promise<ProductionLog[]> => {
-    const { data, error } = await supabase
-      .from('production_logs')
-      .select('*')
-      .limit(999999)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    // Map snake_case to camelCase
-    return (data || []).map((item: any) => ({
-        id: item.id,
-        date: item.date,
-        employeeId: item.employee_id,
-        componentId: item.component_id,
-        qty: item.qty,
-        priceSnapshot: item.price_snapshot,
-        total: item.total
-    }));
+    return apiFetch<ProductionLog[]>('/api/production-logs');
   },
 
   saveProductionLog: async (log: ProductionLog) => {
-    const { data } = await supabase.from('production_logs').select('id').eq('id', log.id).single();
-
-    const payload = {
-        id: log.id,
-        date: log.date,
-        employee_id: log.employeeId,
-        component_id: log.componentId,
-        qty: log.qty,
-        price_snapshot: log.priceSnapshot,
-        total: log.total
-    };
-
-    if (data) {
-        const { error } = await supabase.from('production_logs').update(payload).eq('id', log.id);
-        if (error) throw error;
-    } else {
-        const { error } = await supabase.from('production_logs').insert([payload]);
-        if (error) throw error;
-    }
+    await apiFetch('/api/production-logs', {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(log),
+    });
   },
 
   deleteProductionLog: async (id: string) => {
-    const { error } = await supabase.from('production_logs').delete().eq('id', id);
-    if (error) throw error;
+    await apiFetch(`/api/production-logs?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
   },
 
   deleteAllProductionLogs: async () => {
-    // Delete all records by matching a condition that is always true
-    const { error } = await supabase.from('production_logs').delete().neq('id', '0');
-    if (error) throw error;
+    await apiFetch('/api/production-logs?all=1', { method: 'DELETE' });
   },
 
   // --- PAYMENTS ---
   getPayments: async (): Promise<Payment[]> => {
-    const { data, error } = await supabase
-      .from('payments')
-      .select('*')
-      .limit(999999)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    return (data || []).map((item: any) => ({
-        id: item.id,
-        date: item.date,
-        employeeId: item.employee_id,
-        amount: item.amount,
-        type: item.type,
-        note: item.note
-    }));
+    return apiFetch<Payment[]>('/api/payments');
   },
 
   savePayment: async (p: Payment) => {
-    const { data } = await supabase.from('payments').select('id').eq('id', p.id).single();
-
-    const payload = {
-        id: p.id,
-        date: p.date,
-        employee_id: p.employeeId,
-        amount: p.amount,
-        type: p.type,
-        note: p.note
-    };
-
-    if (data) {
-        const { error } = await supabase.from('payments').update(payload).eq('id', p.id);
-        if (error) throw error;
-    } else {
-        const { error } = await supabase.from('payments').insert([payload]);
-        if (error) throw error;
-    }
+    await apiFetch('/api/payments', {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(p),
+    });
   },
 
   deletePayment: async (id: string) => {
-    const { error } = await supabase.from('payments').delete().eq('id', id);
-    if (error) throw error;
+    await apiFetch(`/api/payments?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
   },
 
   deleteAllPayments: async () => {
-    const { error } = await supabase.from('payments').delete().neq('id', '0');
-    if (error) throw error;
+    await apiFetch('/api/payments?all=1', { method: 'DELETE' });
   },
 
   // --- AUTH & USER MANAGEMENT ---
   login: async (username: string, password: string): Promise<UserAccount | null> => {
-    const { data, error } = await supabase
-        .from('app_users')
-        .select('*')
-        .eq('username', username)
-        .eq('password', password) // In production, hash check happens here
-        .single();
-    
-    if (error || !data) return null;
-
-    return {
-        username: data.username,
-        password: data.password,
-        role: data.role as any,
-        employeeId: data.employee_id,
-        fullName: data.full_name
-    };
+    const result = await apiFetch<UserAccount | null>('/api/auth', {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify({ username, password }),
+    });
+    return result;
   },
 
   getUsers: async (): Promise<UserAccount[]> => {
-    const { data, error } = await supabase.from('app_users').select('*').limit(999999);
-    if (error) throw error;
-
-    return (data || []).map((u: any) => ({
-        username: u.username,
-        password: u.password,
-        role: u.role,
-        employeeId: u.employee_id,
-        fullName: u.full_name
-    }));
+    return apiFetch<UserAccount[]>('/api/users');
   },
-  
-  getUserByEmployeeId: async (empId: string): Promise<UserAccount | undefined> => {
-    const { data } = await supabase
-        .from('app_users')
-        .select('*')
-        .eq('employee_id', empId)
-        .single();
-    
-    if (!data) return undefined;
 
-    return {
-        username: data.username,
-        password: data.password,
-        role: data.role,
-        employeeId: data.employee_id,
-        fullName: data.full_name
-    };
+  getUserByEmployeeId: async (empId: string): Promise<UserAccount | undefined> => {
+    const result = await apiFetch<UserAccount | null>(
+      `/api/users?employeeId=${encodeURIComponent(empId)}`
+    );
+    return result ?? undefined;
   },
 
   saveUser: async (user: UserAccount) => {
-    // Check duplicate username (exclude self logic is tricky in DB without ID, assuming username PK)
-    // We try to upsert
-    const payload = {
-        username: user.username,
-        password: user.password,
-        role: user.role,
-        employee_id: user.employeeId,
-        full_name: user.fullName
-    };
-
-    const { error } = await supabase.from('app_users').upsert(payload, { onConflict: 'username' });
-    if (error) {
-         if (error.message.includes('duplicate key')) {
-             throw new Error(`Username '${user.username}' sudah digunakan.`);
-         }
-         throw error;
-    }
+    await apiFetch('/api/users', {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(user),
+    });
   },
 
   updatePassword: async (username: string, oldPass: string, newPass: string) => {
-    // Verify old pass first
-    const user = await DataService.login(username, oldPass);
-    if (!user) throw new Error('Password lama salah atau user tidak ditemukan.');
+    await apiFetch('/api/users?action=password', {
+      method: 'PUT',
+      headers: JSON_HEADERS,
+      body: JSON.stringify({ username, oldPass, newPass }),
+    });
 
-    const { error } = await supabase
-        .from('app_users')
-        .update({ password: newPass })
-        .eq('username', username);
-
-    if (error) throw new Error(error.message);
-    
-    // Update session storage
     const currentUser = localStorage.getItem('borongan_current_user');
     if (currentUser) {
-        const parsed = JSON.parse(currentUser);
-        if (parsed.username === username) {
-            parsed.password = newPass;
-            localStorage.setItem('borongan_current_user', JSON.stringify(parsed));
-        }
+      const parsed = JSON.parse(currentUser);
+      if (parsed.username === username) {
+        parsed.password = newPass;
+        localStorage.setItem('borongan_current_user', JSON.stringify(parsed));
+      }
     }
   },
 
   deleteUserByEmployeeId: async (empId: string) => {
-    const { error } = await supabase.from('app_users').delete().eq('employee_id', empId);
-    if (error) throw error;
+    await apiFetch(`/api/users?employeeId=${encodeURIComponent(empId)}`, { method: 'DELETE' });
   },
 
   resetData: async () => {
-    // Dangerous in cloud context, maybe disable or just clear local storage
     localStorage.clear();
-  }
+  },
 };
