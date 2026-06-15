@@ -135,9 +135,31 @@
 
 ---
 
+## Milestone v1.8: UX Polish — Form Input
+
+**Status:** ✅ SHIPPED — 2026-06-15
+**Goal:** Tingkatkan UX form input dengan searchable dropdown untuk memudahkan pemilihan dari 27 karyawan dan 61 komponen.
+
+---
+
+### Phase 11: Searchable Dropdown
+
+**Status:** ✅ Complete — 2026-06-15
+**Goal:** Ganti `<select>` biasa di form "Input Hasil Baru" (Production) dan "Transaksi Baru" (Payments) dengan komponen combobox yang bisa difilter via typing.
+**Dependencies:** Phase 10 complete ✓
+**Plans:** 1/1 complete
+
+**Deliverables:**
+- ✅ `components/SearchableSelect.tsx` — reusable combobox, zero dependency baru
+- ✅ Production.tsx: dropdown Nama Karyawan dapat dicari
+- ✅ Production.tsx: dropdown Komponen / Item dapat dicari
+- ✅ Payments.tsx: dropdown Karyawan dapat dicari
+
+---
+
 ## Progress
 
-Phases complete: 10 of 10 (100%)
+Phases complete: 11 of 11 (100%)
 Milestone v1.0: ✅ shipped
 Milestone v1.1: ✅ shipped
 Milestone v1.2: ✅ shipped
@@ -146,6 +168,7 @@ Milestone v1.4: ✅ shipped
 Milestone v1.5: ✅ shipped
 Milestone v1.6: ✅ shipped
 Milestone v1.7: ✅ shipped
+Milestone v1.8: ✅ shipped
 
 ---
 

@@ -3,6 +3,7 @@ import { Payment, Employee, ProductionLog } from '../types';
 import { DataService } from '../services/dataService';
 import { useAuth } from '../contexts/AuthContext';
 import ConfirmModal from './ConfirmModal';
+import SearchableSelect from './SearchableSelect';
 import toast from 'react-hot-toast';
 import { Plus, Trash2, Edit2, Wallet, CheckCircle, X, Banknote, Filter, Printer, Loader2, Info, Calculator, Calendar, ChevronDown, ChevronUp, RotateCcw, ChevronLeft, ChevronRight, Search, AlertCircle } from 'lucide-react';
 
@@ -750,10 +751,13 @@ const Payments: React.FC = () => {
               
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1">Karyawan</label>
-                <select required value={formData.employeeId} onChange={e => setFormData({...formData, employeeId: e.target.value})} className="w-full px-4 py-3 md:py-2 border border-slate-200 dark:border-slate-700 rounded-xl dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">-- Pilih Karyawan --</option>
-                  {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                </select>
+                <SearchableSelect
+                  options={employees.map(e => ({ value: e.id, label: e.name }))}
+                  value={formData.employeeId}
+                  onChange={val => setFormData({...formData, employeeId: val})}
+                  placeholder="Cari karyawan..."
+                  required
+                />
               </div>
 
               {/* CONTEXTUAL BALANCE INFO */}

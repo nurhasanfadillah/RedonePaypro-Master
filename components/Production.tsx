@@ -3,6 +3,7 @@ import { ProductionLog, Employee, Component } from '../types';
 import { DataService } from '../services/dataService';
 import { useAuth } from '../contexts/AuthContext';
 import ConfirmModal from './ConfirmModal';
+import SearchableSelect from './SearchableSelect';
 import toast from 'react-hot-toast';
 import { Plus, Trash2, Edit2, CheckCircle, X, Filter, RotateCcw, Search, ChevronDown, ChevronUp, Printer, Loader2, User, Package, AlertCircle, ChevronLeft, ChevronRight, ClipboardList } from 'lucide-react';
 
@@ -909,10 +910,13 @@ const Production: React.FC = () => {
               
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1">Nama Karyawan</label>
-                <select required value={formData.employeeId} onChange={e => setFormData({...formData, employeeId: e.target.value})} className="w-full px-4 py-3 md:py-2 border border-slate-200 dark:border-slate-700 rounded-xl dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-green-500">
-                  <option value="">-- Pilih Karyawan --</option>
-                  {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                </select>
+                <SearchableSelect
+                  options={employees.map(e => ({ value: e.id, label: e.name }))}
+                  value={formData.employeeId}
+                  onChange={val => setFormData({...formData, employeeId: val})}
+                  placeholder="Cari karyawan..."
+                  required
+                />
               </div>
 
               {/* DAILY CONTEXT SUMMARY */}
@@ -930,10 +934,13 @@ const Production: React.FC = () => {
 
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1">Komponen / Item</label>
-                <select required value={formData.componentId} onChange={e => setFormData({...formData, componentId: e.target.value})} className="w-full px-4 py-3 md:py-2 border border-slate-200 dark:border-slate-700 rounded-xl dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-green-500">
-                  <option value="">-- Pilih Komponen --</option>
-                  {components.map(c => <option key={c.id} value={c.id}>{c.name} - Rp {c.price}</option>)}
-                </select>
+                <SearchableSelect
+                  options={components.map(c => ({ value: c.id, label: `${c.name} - Rp ${c.price.toLocaleString('id-ID')}` }))}
+                  value={formData.componentId}
+                  onChange={val => setFormData({...formData, componentId: val})}
+                  placeholder="Cari komponen..."
+                  required
+                />
               </div>
               <div className="flex gap-4 items-end bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
                 <div className="flex-1">

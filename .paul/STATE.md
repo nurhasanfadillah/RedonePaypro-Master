@@ -6,10 +6,11 @@ Status: Complete (full directory scan, all source files read)
 
 ## Current Position
 
-Milestone: v1.7 Production UI Polish — ✅ Complete
-All phases done.
-Status: Milestone v1.7 complete
-Last activity: 2026-06-13 — Phase 9 complete — Production Card Compact verified
+Milestone: v1.8 UX Polish — COMPLETE ✅
+Phase: 11 (11-searchable-dropdown) — Complete
+Plan: 11-01 unified
+Status: Milestone v1.8 complete — ready for next milestone
+Last activity: 2026-06-15 — Phase 11 complete, Milestone v1.8 SHIPPED
 
 Progress:
 - Milestone v1.0: [██████████] 100% (complete)
@@ -19,17 +20,16 @@ Progress:
 - Milestone v1.4: [██████████] 100% (complete)
 - Milestone v1.5: [██████████] 100% (complete)
 - Milestone v1.6: [██████████] 100% (complete)
-- Phase 8: [██████████] 100% (1/1 plans)
-- Milestone v1.7: [██████████] 100%
-- Phase 9: [██████████] 100% (1/1 plans)
-- Phase 10: [██████████] 100% (1/1 plans)
+- Milestone v1.7: [██████████] 100% (complete)
+- Milestone v1.8: [██████████] 100% (complete)
+- Phase 11: [██████████] 100% (complete)
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ○        ○        ✓     [Phase 10 complete]
+  ✓        ✓        ✓     [Loop complete — Phase 11 + Milestone v1.8 shipped]
 ```
 
 ## Plans in Phase 01
@@ -97,12 +97,18 @@ PLAN ──▶ APPLY ──▶ UNIFY
 |------|------|--------|------|
 | 10-01 | `.paul/phases/10-pwa-optimization/10-01-PLAN.md` | ✓ Complete | Manifest + SW + offline indicator |
 
+## Plans in Phase 11
+
+| Plan | File | Status | Note |
+|------|------|--------|------|
+| 11-01 | `.paul/phases/11-searchable-dropdown/11-01-PLAN.md` | ✓ Complete | SearchableSelect + 3 dropdown form input |
+
 ## Session Continuity
 
-Last session: 2026-06-13
-Stopped at: Phase 9 + 10 complete — Milestone v1.7 shipped
-Next action: Semua phase selesai. Siap untuk milestone berikutnya.
-Resume file: N/A
+Last session: 2026-06-15
+Stopped at: Milestone v1.8 SHIPPED — Phase 11 complete
+Next action: Tentukan milestone berikutnya atau /paul:milestone untuk merencanakan v1.9
+Resume file: .paul/ROADMAP.md
 Codebase map: .paul/CODEBASE.md
 
 ## Decisions
@@ -118,6 +124,8 @@ Codebase map: .paul/CODEBASE.md
 | 2026-06-12 | Seed via npx tsx db/seed.ts (bukan API endpoint) | Tidak perlu server running; lebih cepat untuk bulk insert |
 | 2026-06-12 | SVG favicon + PNG fallback untuk PWA icon | SVG crisp di semua ukuran, zero CDN dependency |
 | 2026-06-12 | Monogram "RP" + green (#22c55e) + dark bg (#0f172a) | Konsisten dengan theme-color & background_color manifest |
+| 2026-06-15 | onMouseDown bukan onClick untuk SearchableSelect item | onClick terjadi setelah blur — query ter-reset sebelum selection |
+| 2026-06-15 | required prop tidak di-forward ke <input> SearchableSelect | Validasi via toast handleSave, bukan native browser validation |
 
 ## Accumulated Context
 
@@ -150,6 +158,20 @@ Codebase map: .paul/CODEBASE.md
 - App.tsx: sidebar logo → SVG baru
 - Zero Flaticon CDN dependency
 
+**Milestone v1.8 (Phase 11):**
+- components/SearchableSelect.tsx: combobox reusable — filter realtime, pre-fill, click-outside, dark mode
+- Production.tsx: 2x SearchableSelect (Nama Karyawan + Komponen/Item)
+- Payments.tsx: 1x SearchableSelect (Karyawan)
+- Zero dependency baru
+
+### Git State
+
+Last commit: 3787be8
+Branch: main
+Feature branches merged: none
+
 ### Known Concerns
 - Password stored plaintext di NeonDB — perlu hashing di milestone berikutnya
 - Tailwind v3 — upgrade ke v4 perlu refactor config
+- SearchableSelect: keyboard navigation (↑↓ Enter) belum ada — defer ke milestone berikutnya
+- SearchableSelect: ARIA/aksesibilitas penuh belum ada — defer ke milestone berikutnya

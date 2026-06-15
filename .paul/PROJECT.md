@@ -57,6 +57,14 @@ Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT
 | ✓ Ikon app modern (SVG + PNG local) | Phase 7 | Monogram "RP", zero CDN dependency |
 | ✓ Mobile card Karyawan tanpa alamat | Phase 8 | Ringkas: hanya nama + ID + status akses |
 | ✓ Mobile card Komponen 2 kolom + toggle aksi | Phase 8 | ID+nama kiri, harga kanan; edit/hapus saat diklik (ADMIN) |
+| ✓ Searchable dropdown form Production & Payments | Phase 11 | Filter realtime, pre-fill edit, click-outside, zero dependency baru |
+
+## Key Decisions (Phase 11)
+| Decision | Rationale |
+|----------|-----------|
+| `onMouseDown` bukan `onClick` untuk item selection | `onClick` terjadi setelah `blur` — query ter-reset sebelum selection terjadi |
+| `required` prop di-declare tapi tidak di-forward ke `<input>` | Validasi via toast `handleSave` sesuai pola existing; bukan native browser validation |
+| Zero dependency baru | Bundle tidak bertambah; hanya React hooks + lucide-react yang sudah ada |
 
 ## Key Decisions (Phase 7)
 | Decision | Rationale |
@@ -115,4 +123,4 @@ Sistem Manajemen Produksi & Penggajian untuk pekerja borongan (piece-rate) di PT
 | `GEMINI_API_KEY` | Google Gemini (belum aktif digunakan) |
 
 ---
-*Last updated: 2026-06-12 after Phase 7 (07-modernize-app-icon)*
+*Last updated: 2026-06-15 after Phase 11 (11-searchable-dropdown)*
